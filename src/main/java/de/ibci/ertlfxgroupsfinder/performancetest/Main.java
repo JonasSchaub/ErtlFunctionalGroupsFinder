@@ -1,9 +1,8 @@
-/**
- * Performance test for
+/*
  * ErtlFunctionalGroupsFinder for CDK
- * Copyright (C) 2019 Jonas Schaub
+ * Copyright (c) 2023 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
  * 
- * Source code is available at <https://github.com/zielesny/ErtlFunctionalGroupsFinder>
+ * Source code is available at <https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -18,11 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package de.ibci.ertlfxgroupsfinder.performancetest;
 
 /**
  * Main class for starting application.
- * 
+ *
  * @author Jonas Schaub
  */
 public class Main {
@@ -32,9 +32,9 @@ public class Main {
     }
 
     /**
-     * Starts the application. Command line arguments must be the name of an SD-file to read (must be located in the 
+     * Starts the application. Command line arguments must be the name of an SD-file to read (must be located in the
      * same directory as the application's .jar file) and the number of different threads to use for calculation.
-     * 
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -45,7 +45,5 @@ public class Main {
             System.exit(1);
         }
     }
-    
+
 }
-
-

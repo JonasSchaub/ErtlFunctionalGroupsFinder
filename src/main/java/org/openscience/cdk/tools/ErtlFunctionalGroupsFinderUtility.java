@@ -1,22 +1,23 @@
 /*
- * Utilities for ErtlFunctionalGroupsFinder for CDK
- * Copyright (C) 2022 Jonas Schaub
- *
- * Source code is available at <https://github.com/zielesny/ErtlFunctionalGroupsFinder>
- *
+ * ErtlFunctionalGroupsFinder for CDK
+ * Copyright (c) 2023 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
+ * 
+ * Source code is available at <https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder>
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2.1
  * of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.openscience.cdk.tools;
 
 import org.openscience.cdk.CDKConstants;
@@ -997,11 +998,11 @@ public class ErtlFunctionalGroupsFinderUtility {
         String tmpCdkTitle = aMolecule.getProperty(CDKConstants.TITLE);
         String tmpTitle = aMolecule.getTitle();
         String tmpID = aMolecule.getID();
-        if (!Objects.isNull(tmpCdkTitle) && !tmpCdkTitle.equals("")) {
+        if (!Objects.isNull(tmpCdkTitle) && !tmpCdkTitle.isEmpty()) {
             return "CDK title: " + tmpCdkTitle;
-        } else if (!Objects.isNull(tmpTitle) && !tmpTitle.equals("")) {
+        } else if (!Objects.isNull(tmpTitle) && !tmpTitle.isEmpty()) {
             return "Title: " + tmpTitle;
-        } else if (!Objects.isNull(tmpID) && !tmpID.equals("")) {
+        } else if (!Objects.isNull(tmpID) && !tmpID.isEmpty()) {
             return "ID: " + tmpID;
         } else {
             return "No title or id could be determined.";

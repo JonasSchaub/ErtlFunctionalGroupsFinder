@@ -2,7 +2,7 @@
  * ErtlFunctionalGroupsFinder for CDK
  * Copyright (c) $today.year Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
  * 
- * Source code is available at <https://github.com/zielesny/ErtlFunctionalGroupsFinder>
+ * Source code is available at <https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License

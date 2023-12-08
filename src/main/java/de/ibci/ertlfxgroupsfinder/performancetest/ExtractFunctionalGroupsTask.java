@@ -1,9 +1,8 @@
-/**
- * Performance test for
+/*
  * ErtlFunctionalGroupsFinder for CDK
- * Copyright (C) 2019 Jonas Schaub
+ * Copyright (c) 2023 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
  * 
- * Source code is available at <https://github.com/zielesny/ErtlFunctionalGroupsFinder>
+ * Source code is available at <https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -18,39 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package de.ibci.ertlfxgroupsfinder.performancetest;
 
-import java.util.concurrent.Callable;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
 
+import java.util.concurrent.Callable;
+
 /**
- * A Callable thread that extracts functional groups from all molecules in a given array using the 
+ * A Callable thread that extracts functional groups from all molecules in a given array using the
  * ErtlFunctionalGroupsFinder class.
- * 
+ *
  * @author Jonas Schaub
  */
 public class ExtractFunctionalGroupsTask implements Callable<Integer> {
 
     private final IAtomContainer[] moleculesArray;
-    
+
     private final ErtlFunctionalGroupsFinder ertlFinder;
-    
+
     /**
      * Instantiates the thread.
-     * 
-     * @param aListOfMolecules atom containers should meet the ErtlFunctionalGroupsFinder's input specifications but 
+     *
+     * @param aListOfMolecules atom containers should meet the ErtlFunctionalGroupsFinder's input specifications but
      * any occurring exception will be caught
      */
     public ExtractFunctionalGroupsTask(IAtomContainer[] aListOfMolecules) {
         this.moleculesArray = aListOfMolecules;
         this.ertlFinder = new ErtlFunctionalGroupsFinder();
     }
-    
+
     /**
-     * Applies the ErtlFunctionalGroupsFinder.find(IAtomContainer container, boolean clone) method on all given 
+     * Applies the ErtlFunctionalGroupsFinder.find(IAtomContainer container, boolean clone) method on all given
      * molecules (parameter clone = false) and counts the occurring exceptions.
-     * 
+     *
      * @return the number of occurred exceptions
      * @throws Exception if unable to compute a result (copied from doc in Callable interface)
      */
@@ -66,5 +67,5 @@ public class ExtractFunctionalGroupsTask implements Callable<Integer> {
         }
         return tmpExceptionsCounter;
     }
-    
+
 }
