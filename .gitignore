@@ -7,4 +7,10 @@
 # Idea files and folders #
 .idea/
 *iml
-target/
+
+# Gradle build dir
+build/
+.gradle
+
+# EFGF evaluation test output
+ErtlFunctionalGroupsFinderEvaluationTest_Output/
