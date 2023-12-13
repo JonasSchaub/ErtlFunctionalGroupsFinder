@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * evaluating the ErtlFunctionalGroupsFinder, as described in the publication.
  *
  * @author Jonas Schaub
- * @version 1.0.2.0
+ * @version 1.2
  */
 public class ErtlFunctionalGroupsFinderUtility {
     //<editor-fold defaultstate="collapsed" desc="Enum CustomAtomEncoder">

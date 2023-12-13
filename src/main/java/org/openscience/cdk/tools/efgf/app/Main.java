@@ -18,12 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.ibci.ertlfxgroupsfinder.performancetest;
+package org.openscience.cdk.tools.efgf.app;
 
 /**
  * Main class for starting application.
  *
  * @author Jonas Schaub
+ * @version 1.2
  */
 public class Main {
 

@@ -49,7 +49,7 @@ import java.util.Set;
  * [Ertl P. An algorithm to identify functional groups in organic molecules. J Cheminform. 2017; 9:36.].
  *
  * @author Sebastian Fritsch, Jonas Schaub
- * @version 1.0.0.1
+ * @version 1.2
  */
 public class ErtlFunctionalGroupsFinder {
 

@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.ibci.ertlfxgroupsfinder.performancetest;
+package org.openscience.cdk.tools.efgf.app;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.aromaticity.Aromaticity;
@@ -63,7 +63,7 @@ import java.util.concurrent.Future;
  * multiple threads.
  *
  * @author Jonas Schaub
- * @version 1.0.0.1
+ * @version 1.2.0.0
  */
 public class ErtlFunctionalGroupsFinderPerformanceTest {
 

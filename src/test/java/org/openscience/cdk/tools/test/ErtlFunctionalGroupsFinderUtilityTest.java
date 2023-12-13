@@ -42,7 +42,7 @@ import java.util.List;
  * Tests functionalities of ErtlFunctionalGroupsFinderUtility class.
  *
  * @author Jonas Schaub
- * @version 1.0.1.1
+ * @version 1.2
  */
 public class ErtlFunctionalGroupsFinderUtilityTest {
     /**

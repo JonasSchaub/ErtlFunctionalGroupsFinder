@@ -83,7 +83,7 @@ import java.util.Set;
  * that assumption).
  *
  * @author Jonas Schaub
- * @version 1.0.0.1
+ * @version 1.2
  */
 public class ErtlFunctionalGroupsFinderEvaluationTest {
 

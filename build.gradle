@@ -30,7 +30,7 @@ plugins {
 }
 
 application {
-    mainClassName = 'de.ibci.ertlfxgroupsfinder.performancetest.Main'
+    mainClassName = 'org.openscience.cdk.tools.efgf.app.Main'
 }
 
 group = 'io.github.jonasschaub'
@@ -69,7 +69,7 @@ dependencies {
     testImplementation('org.junit.jupiter:junit-jupiter')
     implementation group: 'org.openscience.cdk', name: 'cdk-bundle', version: cdkVersion
 }
-mainClassName = 'de.ibci.ertlfxgroupsfinder.performancetest.Main'
+mainClassName = 'org.openscience.cdk.tools.efgf.app.Main'
 applicationName = 'ErtlFunctionalGroupsFinderPerformanceTest'
 
 tasks.withType(Test).configureEach {

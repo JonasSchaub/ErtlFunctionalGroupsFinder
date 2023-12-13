@@ -50,7 +50,7 @@ import java.util.Map;
  * Test for ErtlFunctionalGroupsFinder.
  *
  * @author Sebastian Fritsch
- * @version 1.0.0.1
+ * @version 1.2
  */
 public class ErtlFunctionalGroupsFinderTest {
 
