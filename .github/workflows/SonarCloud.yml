@@ -4,7 +4,8 @@ name: SonarCloud
 on:
   push:
     branches:
-      - main
+      - master
+      - functional-repo
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
