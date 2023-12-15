@@ -14,6 +14,9 @@
 
 # ErtlFunctionalGroupsFinder
 An open implementation of the [Ertl algorithm for functional group identification in organic molecules](https://doi.org/10.1186/s13321-017-0225-z).
+<p></p> 
+
+See the GitHub repository here: [https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder)
 
 ## Description
 The algorithm for automated functional groups detection and extraction of organic molecules developed by Dr Peter Ertl 
