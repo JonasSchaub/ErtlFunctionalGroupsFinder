@@ -1,0 +1,252 @@
+/*
+ * ErtlFunctionalGroupsFinder for CDK
+ * Copyright (C) 2023 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
+ * 
+ * Source code is available at <https://github.com/zielesny/ErtlFunctionalGroupsFinder>
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+plugins {
+    id 'application'
+    id 'org.gradle.java'
+    id 'java-library'
+    id 'java'
+    id("com.diffplug.spotless") version "6.19.0"
+    id 'org.gradle.maven-publish'
+    id 'signing'
+    id("org.sonarqube") version "4.4.1.3373"
+}
+
+application {
+    mainClassName = 'org.openscience.cdk.tools.efgf.app.Main'
+}
+
+group = 'io.github.jonasschaub'
+archivesBaseName = 'ErtlFunctionalGroupsFinder'
+//see also version for publishing below! And do not forget to update CITATION.cff version as well!!!
+version = '1.2.0.0'
+
+//sourceCompatibility = 1.21
+
+//Creates javadoc and sources jars
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://s01.oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
+def cdkVersion = '2.9'
+dependencies {
+    implementation group: 'org.jetbrains', name : 'annotations', version: '23.0.0'
+    testImplementation(platform('org.junit:junit-bom:5.9.1'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    implementation group: 'org.openscience.cdk', name: 'cdk-bundle', version: cdkVersion
+}
+mainClassName = 'org.openscience.cdk.tools.efgf.app.Main'
+applicationName = 'ErtlFunctionalGroupsFinderPerformanceTest'
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    forkEvery = 1
+
+    testLogging {
+        showStandardStreams = true
+    }
+}
+//Needed to make the created jar archives executable
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+//Creates a jar archive that includes all dependencies of the project, i.e. that  ErtlFunctionalGroupsFinderPerformanceTest.jar can be started by executing this jar
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'ErtlFunctionalGroupsFinderPerformanceTest Jar File',
+                'Implementation-Version': archiveVersion,
+                'Main-Class': mainClassName
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    archiveAppendix = 'fat'
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
+spotless {
+    java {
+        encoding 'UTF-8'
+        cleanthat()
+        importOrder('de', 'org', 'com', 'java', 'javax')
+        removeUnusedImports()
+        indentWithSpaces(4) // doesn't really seem to work...
+        trimTrailingWhitespace()
+        endWithNewline()
+        licenseHeaderFile('License-header/License-header.txt')
+        //eclipse() //not optimal, because indents with tabs..
+        //googleJavaFormat() //not optimal, because indents with two spaces...
+        //palantirJavaFormat() //not optimal, because unnecessary line breaks in head of for loop and corrupts editor folds
+        //prettier() //needs npm installed, unsuitable...
+        //clangFormat() //also needs an installation...
+        custom 'Refuse wildcard imports', {
+            // Wildcard imports can't be resolved by spotless itself.
+            // This will require the developer themselves to adhere to best practices.
+            if (it =~ /\nimport .*\*;/) {
+                throw new AssertionError("Do not use wildcard imports. 'spotlessApply' cannot resolve this issue.")
+            }
+        }
+    }
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "JonasSchaub_ErtlFunctionalGroupsFinder")
+        property("sonar.organization", "jonasschaub")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
+}
+
+//Archives artifacts executed with build
+artifacts {
+    archives javadocJar, sourcesJar
+    archives fatJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            groupId = 'io.github.jonasschaub'
+            artifactId = 'ErtlFunctionalGroupsFinder'
+            version = '1.2.0.0'
+
+            from components.java
+
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+
+            pom {
+
+                name = 'ErtlFunctionalGroupsFinder'
+                description = 'ErtlFunctionalGroupsFinder for CDK'
+                url = 'https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder'
+
+                //this way, properties can be added:
+                //properties = [
+                //myProp: "value",
+                //"prop.with.dots": "anotherValue"
+                //]
+
+                licenses {
+                    license {
+                        name = 'LGPL-2.1'
+                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.en'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'SebFritsch'
+                        name = 'Sebastian Fritsch'
+                        url = 'https://github.com/SebFritsch'
+                    }
+					developer {
+                        name = 'Stefan Neumann'
+                    }
+                    developer {
+                        id = 'JonasSchaub'
+                        name = 'Jonas Schaub'
+                        email = 'jonas.schaub@uni-jena.de'
+                        url = 'https://github.com/JonasSchaub'
+                    }
+                    developer {
+                        name = 'Christoph Steinbeck'
+                        email = 'christoph.steinbeck@uni-jena.de'
+                        url = 'https://cheminf.uni-jena.de/members/steinbeck/'
+                    }
+                    developer {
+                        name = 'Achim Zielesny'
+                        email = 'achim.zielesny@w-hs.de'
+                        url = 'https://www.w-hs.de/service/informationen-zur-person/person/zielesny/'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git://github.com/JonasSchaub/ErtlFunctionalGroupsFinder.git'
+                    developerConnection = 'scm:git:ssh://github.com/JonasSchaub/ErtlFunctionalGroupsFinder.git'
+                    url = 'https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            //these two lines did not work because dir() apparently asks for a local path
+            //def releasesRepoUrl = layout.buildDirectory.dir('https://s01.oss.sonatype.org/content/repositories/releases/')
+            //def snapshotsRepoUrl = layout.buildDirectory.dir('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+
+            //TODO: is this actually the way to fully automatically do it?
+            //def releasesRepoUrl = 'https://s01.oss.sonatype.org/content/repositories/releases/'
+            //def snapshotsRepoUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+            //url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            //after publishing, go to https://s01.oss.sonatype.org, log in, close the staged repo, and release it if everything worked out
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                //uses keys and passwords declared in userhome/.gradle/gradle.properties
+                //username = property("ossrhUsername") as String
+                //password = property("ossrhPassword") as String
+                //uses environment variables declared in yml file which passes GitHub secrets to it
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    //uses keys and passwords declared in userhome/.gradle/gradle.properties, works locally
+    //sign publishing.publications.mavenJava
+
+    //uses environment variables declared in yml file which passes GitHub secrets to it
+    def signingKey = System.getenv("signingKey")
+    def signingPassword = System.getenv("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
+}

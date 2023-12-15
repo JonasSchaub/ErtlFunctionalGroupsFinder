@@ -1,0 +1,46 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+#taken from: https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-gradle
+# and extended using https://selectfrom.dev/using-github-actions-to-automatically-publish-gradle-build-artifacts-d71c915cfa4
+name: Publish package to the Maven Central Repository
+on:
+  #push:
+    #branches: [ "main" ]
+  release:
+    types: [published]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version:  '21'
+          distribution:  'temurin'
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@ccb4328a959376b642e027874838f60f8e596de3
+      #- name: Publish package
+        #uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 #from the tutorial
+        ##uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1 #this is the action used in the other yml file, the Gradle build
+        #with:
+          #arguments: publish
+        #env:
+          #MAVEN_USERNAME: ${{ secrets.OSSRHUSERNAME }}
+          #MAVEN_PASSWORD: ${{ secrets.OSSRHPASSWORD }}
+      - name: Publish with Gradle #from the second tutorial
+        env:
+          MAVEN_PASSWORD: ${{secrets.OSSRHPASSWORD}}
+          MAVEN_USERNAME: ${{secrets.OSSRHUSERNAME}}
+          signingKey: ${{secrets.PGP_SECRET}}
+          signingPassword: ${{secrets.PGP_PASSPHRASE}}
+        run: ./gradlew publish --no-daemon
