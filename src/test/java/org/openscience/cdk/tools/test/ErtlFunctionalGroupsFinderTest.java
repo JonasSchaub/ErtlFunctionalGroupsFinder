@@ -38,6 +38,8 @@ import org.openscience.cdk.isomorphism.Mappings;
 import org.openscience.cdk.isomorphism.Pattern;
 import org.openscience.cdk.isomorphism.VentoFoggia;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmiFlavor;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
@@ -196,6 +198,38 @@ public class ErtlFunctionalGroupsFinderTest {
         String moleculeSmiles = "N[C@@H]1CCCCN(C1)c2c(Cl)cc3C(=O)C(=CN(C4CC4)c3c2Cl)C(=O)O";
         String[] expectedFGs = new String[] {"[C]N([H])[H]", "[R]N([R])[R]", "[R]Cl" , "[c]=O", "[R]Cl", "[R]C(=O)OH", "NarR3"};
         testFind(moleculeSmiles, expectedFGs);
+    }
+
+    /**
+     * Example code to be used in the GitHub wiki of the project.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void gitHubWikiTest() throws Exception {
+        //Prepare input
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        IAtomContainer tmpInputMol = tmpSmiPar.parseSmiles("C[C@@H]1CN(C[C@H](C)N1)C2=C(C(=C3C(=C2F)N(C=C(C3=O)C(=O)O)C4CC4)N)F"); //PubChem CID 5257
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpInputMol);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+        tmpAromaticity.apply(tmpInputMol);
+        //Identify functional groups
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(); //default: generalization turned on
+        List<IAtomContainer> tmpFunctionalGroupsList = tmpEFGF.find(tmpInputMol);
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
+        for (IAtomContainer tmpFunctionalGroup : tmpFunctionalGroupsList) {
+            String tmpSmilesString = tmpSmiGen.create(tmpFunctionalGroup);
+            System.out.println(tmpSmilesString);
+        }
+        //non-generalized functional groups
+        System.out.println("----------------");
+        tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+        tmpFunctionalGroupsList = tmpEFGF.find(tmpInputMol);
+        for (IAtomContainer tmpFunctionalGroup : tmpFunctionalGroupsList) {
+            String tmpSmilesString = tmpSmiGen.create(tmpFunctionalGroup);
+            System.out.println(tmpSmilesString);
+        }
     }
 
     private void testFind(String moleculeSmiles, String[] fGStrings) throws Exception {
