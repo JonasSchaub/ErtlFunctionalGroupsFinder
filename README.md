@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7105728.svg)](https://doi.org/10.5281/zenodo.7105728)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10391832.svg)](https://doi.org/10.5281/zenodo.10391832)
 [![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://jonasschaub.github.io/ErtlFunctionalGroupsFinder/javadoc/latest/index.html)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-blue.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/graphs/commit-activity)
@@ -21,14 +21,14 @@ See the GitHub repository here: [https://github.com/JonasSchaub/ErtlFunctionalGr
 ## Description
 The algorithm for automated functional groups detection and extraction of organic molecules developed by Dr Peter Ertl 
 is implemented on the basis of the [Chemistry Development Kit (CDK)](https://github.com/cdk/cdk). <br/>
-The open reimplementation named ErtlFunctionalGroupsFinder is described in a [scientific article](https://doi.org/10.1186/s13321-019-0361-8). <br/>
+This open reimplementation named ErtlFunctionalGroupsFinder is described in a [scientific article](https://doi.org/10.1186/s13321-019-0361-8). <br/>
 <br>ErtlFunctionalGroupsFinder is also available in the open Java rich client application MORTAR ('MOlecule fRagmenTation fRamework')
 where <i>in silico</i> molecule fragmentation can be easily conducted on a given data set and the results visualised
-([MORTAR GitHub repository](https://github.com/FelixBaensch/MORTAR), [MORTAR article preprint](https://doi.org/10.26434/chemrxiv-2022-zgg8s)).
+([MORTAR GitHub repository](https://github.com/FelixBaensch/MORTAR), [MORTAR article](https://doi.org/10.1186/s13321-022-00674-9)).
 
 ## Contents of this repository
 ### Sources
-The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/src">"src"</a> subfolder contains
+The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src">"src"</a> subfolder contains
 all source code packages including JUnit tests.
 
 ### Tests
@@ -36,17 +36,18 @@ The test class <i>ErtlFunctionalGroupsFinderTest</i> tests the functionalities o
 Among other things, it tests whether the correct functional groups are detected in example molecules.
 
 ### Test resources
-The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/ErtlFunctionalGroupsFinder/src/test/resources">"resources"</a> subfolder
+The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src/test/resources">"resources"</a> subfolder
 contains an SD file with a small subset of small molecules taken from the [Chemical Entities of Biological Interest (ChEBI) database](http://www.ebi.ac.uk/chebi) 
 for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) 
 which allows distribution and modification.
 
 ### Performance Test CMD Application
-The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/ErtlFunctionalGroupsFinder/Performance_Test_jar">"Performance_Test_jar"</a>
+The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Test_jar">"Performance_Test_jar"</a>
 contains the executable JAVA archive <i>ErtlFunctionalGroupsFinderPerformanceTest.jar</i>.
 It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find() 
 method under parallelization on multiple threads.
-For more details see the file <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/ErtlFunctionalGroupsFinder/Performance_Test_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
+For more details see the file 
+<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Test_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
 
 ## Example initialization and usage of ErtlFunctionalGroupsFinder
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
@@ -82,9 +83,12 @@ be pre-installed.
 
 # Acknowledgments
 Project team: Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny.<br/>
-The authors like to thank Peter Ertl for describing his algorithm in a way that allowed easy re-implementation. 
+<br>
+Logo: [Kohulan Rajan](https://github.com/Kohulan) <br>
+<br>
+The authors thank Peter Ertl for describing his algorithm in a way that allowed easy re-implementation. 
 This is not always the case. We also thank him for valuable discussions. 
-We appreciate help from Egon Willighagen and John Mayfield with the CDK integration 
+<br>We appreciate help from Egon Willighagen and John Mayfield with the CDK integration 
 and from Felix Bänsch for unbiased release testing.
 
 # References
@@ -99,4 +103,4 @@ and from Felix Bänsch for unbiased release testing.
 * [Steinbeck C, Han Y, Kuhn S, Horlacher O, Luttmann E, Willighagen EL. The Chemistry Development Kit (CDK): An Open-Source Java Library for Chemo- and Bioinformatics. J Chem Inform Comput Sci. 2003;43(2):493-500.](https://dx.doi.org/10.1021%2Fci025584y) <br/>
 * [Steinbeck C, Hoppe C, Kuhn S, Floris M, Guha R, Willighagen EL. Recent Developments of the Chemistry Development Kit (CDK) - An Open-Source Java Library for Chemo- and Bioinformatics. Curr Pharm Des. 2006; 12(17):2111-2120.](https://doi.org/10.2174/138161206777585274) <br/>
 * [May JW and Steinbeck C. Efficient ring perception for the Chemistry Development Kit. J. Cheminform. 2014; 6:3.](https://dx.doi.org/10.1186%2F1758-2946-6-3) <br/>
-* [Willighagen EL, Mayfield JW, Alvarsson J, Berg A, Carlsson L, Jeliazkova N, Kuhn S, Pluska T, Rojas-Chertó M, Spjuth O, Torrance G, Evelo CT, Guha R, Steinbeck C, The Chemistry Development Kit (CDK) v2.0: atom typing, depiction, molecular formulas, and substructure searching. J Cheminform. 2017; 9:33.](https://doi.org/10.1186/s13321-017-0220-4)
+* [Willighagen EL, Mayfield JW, Alvarsson J, Berg A, Carlsson L, Jeliazkova N, Kuhn S, Pluskal T, Rojas-Chertó M, Spjuth O, Torrance G, Evelo CT, Guha R, Steinbeck C, The Chemistry Development Kit (CDK) v2.0: atom typing, depiction, molecular formulas, and substructure searching. J Cheminform. 2017; 9:33.](https://doi.org/10.1186/s13321-017-0220-4)
