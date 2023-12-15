@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7105728.svg)](https://doi.org/10.5281/zenodo.7105728)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10391832.svg)](https://doi.org/10.5281/zenodo.10391832)
 [![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://jonasschaub.github.io/ErtlFunctionalGroupsFinder/javadoc/latest/index.html)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-blue.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/graphs/commit-activity)
