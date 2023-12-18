@@ -21,6 +21,7 @@
 plugins {
     id 'application'
     id 'org.gradle.java'
+    id 'jacoco'
     id 'java-library'
     id 'java'
     id("com.diffplug.spotless") version "6.19.0"
@@ -101,6 +102,12 @@ task fatJar(type: Jar) {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     with jar
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
 }
 
 spotless {
