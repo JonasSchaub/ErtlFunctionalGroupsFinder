@@ -38,13 +38,13 @@ contains an SD file with a small subset of small molecules taken from the [Chemi
 for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) 
 which allows distribution and modification.
 
-### Performance Test CMD Application
-The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Test_jar">"Performance_Test_jar"</a>
-contains the executable JAVA archive <i>ErtlFunctionalGroupsFinderPerformanceTest.jar</i>.
+### Performance Snapshot CMD Application
+The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
+contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar</i>.
 It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find() 
 method under parallelization on multiple threads.
 For more details see the file 
-<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Test_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
+<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
 
 ## Example initialization and usage of ErtlFunctionalGroupsFinder
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
