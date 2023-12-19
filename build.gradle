@@ -71,7 +71,7 @@ dependencies {
     implementation group: 'org.openscience.cdk', name: 'cdk-bundle', version: cdkVersion
 }
 mainClassName = 'org.openscience.cdk.tools.efgf.app.Main'
-applicationName = 'ErtlFunctionalGroupsFinderPerformanceTest'
+applicationName = 'ErtlFunctionalGroupsFinderPerformanceSnapshotApp'
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
@@ -89,15 +89,15 @@ jar {
     }
 }
 
-//Creates a jar archive that includes all dependencies of the project, i.e. that  ErtlFunctionalGroupsFinderPerformanceTest.jar can be started by executing this jar
+//Creates a jar archive that includes all dependencies of the project, so that  ErtlFunctionalGroupsFinderPerformanceSnapshotApp.jar can be started by executing this jar
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'ErtlFunctionalGroupsFinderPerformanceTest Jar File',
+        attributes 'Implementation-Title': 'ErtlFunctionalGroupsFinderPerformanceSnapshotApp Jar File',
                 'Implementation-Version': archiveVersion,
                 'Main-Class': mainClassName
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
-    archiveAppendix = 'fat'
+    archiveAppendix = 'PerformanceSnapshotApp'
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
