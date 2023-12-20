@@ -605,7 +605,7 @@ public class ErtlFunctionalGroupsFinder {
             for(int i = 0; i < atomCount; i++) {
                 IAtom atom = fGroup.getAtom(i);
 
-                if(isDbg()) log.debug(String.format(" - Atom #%d:%   - Expanding environment...", i));
+                if(isDbg()) log.debug(String.format(" - Atom #%d   - Expanding environment...", i));
                 expandEnvironment(atom, fGroup);
 
                 int hCount = atom.getImplicitHydrogenCount();

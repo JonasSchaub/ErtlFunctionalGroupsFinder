@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -138,6 +139,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         tmpExceptionsPrintWriter.println();
         tmpExceptionsPrintWriter.flush();
         tmpExceptionsPrintWriter.close();
+        ExecutorService executor = null;
         try {
             if (anArgs.length != 2) {
                 throw new IllegalArgumentException("Two arguments (a file name and the number of threads to use) are required.");
@@ -211,13 +213,14 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
                 IAtomContainer[] tmpMoleculesArrayForThread = Arrays.copyOfRange(this.moleculesArray, i, i + tmpNumberOfMoleculesPerThread);
                 tmpListOfThreads.add(new ExtractFunctionalGroupsTask(tmpMoleculesArrayForThread));
             }
-            ExecutorService executor = Executors.newFixedThreadPool(this.numberOfThreadsToUse);
+            executor = Executors.newFixedThreadPool(this.numberOfThreadsToUse);
             List<Future<Integer>> tmpFuturesList = new LinkedList<>();
             long tmpStartTime = System.currentTimeMillis();
             try {
                 tmpFuturesList = executor.invokeAll(tmpListOfThreads);
             } catch (Exception ex) {
                 this.appendToLogfile(ex);
+                throw ex;
             }
             long tmpEndTime = System.currentTimeMillis();
             tmpResultsPrintWriter.println("Divided molecules onto " + this.numberOfThreadsToUse
@@ -230,13 +233,17 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             }
             tmpResultsPrintWriter.println(tmpExceptionsCounter + " molecules produced an exception.");
             tmpResultsPrintWriter.flush();
-            executor.shutdown();
+            executor.close();
             tmpResultsPrintWriter.println();
             tmpResultsPrintWriter.flush();
             tmpResultsPrintWriter.close();
         } catch (Exception anException) {
             this.appendToLogfile(anException);
             anException.printStackTrace(System.err);
+            if (!Objects.isNull(executor)) {
+                executor.close();
+            }
+            Thread.currentThread().interrupt();
             System.exit(1);
         }
     }
@@ -265,7 +272,9 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
                     tmpBiggestFragment = tmpFragment;
                 }
             }
-            aMolecule = tmpBiggestFragment;
+            if (!Objects.isNull(tmpBiggestFragment)) {
+                aMolecule = tmpBiggestFragment;
+            }
         }
         for (IAtom tmpAtom : aMolecule.atoms()) {
             if (!this.nonMetallicAtomicNumbersSet.contains(tmpAtom.getAtomicNumber())) {
