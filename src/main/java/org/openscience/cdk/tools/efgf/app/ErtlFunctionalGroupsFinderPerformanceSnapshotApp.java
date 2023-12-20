@@ -140,6 +140,8 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         tmpExceptionsPrintWriter.flush();
         tmpExceptionsPrintWriter.close();
         ExecutorService executor = null;
+        PrintWriter tmpResultsPrintWriter = null;
+        boolean tmpHasAnErrorOccurred = false;
         try {
             if (anArgs.length != 2) {
                 throw new IllegalArgumentException("Two arguments (a file name and the number of threads to use) are required.");
@@ -171,7 +173,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             File tmpResultsLogFile = new File(this.workingPath
                     + ErtlFunctionalGroupsFinderPerformanceSnapshotApp.RESULTS_FILE_NAME);
             FileWriter tmpResultsLogFileWriter = new FileWriter(tmpResultsLogFile, true);
-            PrintWriter tmpResultsPrintWriter = new PrintWriter(tmpResultsLogFileWriter);
+            tmpResultsPrintWriter = new PrintWriter(tmpResultsLogFileWriter);
             tmpResultsPrintWriter.println("#########################################################################");
             tmpResultsPrintWriter.println("Time-stamp: " + tmpTimeStamp);
             tmpResultsPrintWriter.println();
@@ -240,11 +242,19 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         } catch (Exception anException) {
             this.appendToLogfile(anException);
             anException.printStackTrace(System.err);
+            if (anException instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        } finally {
             if (!Objects.isNull(executor)) {
                 executor.close();
             }
-            Thread.currentThread().interrupt();
-            System.exit(1);
+            if (!Objects.isNull(tmpResultsPrintWriter)) {
+                tmpResultsPrintWriter.close();
+            }
+            if (tmpHasAnErrorOccurred) {
+                System.exit(1);
+            }
         }
     }
     //</editor-fold>
