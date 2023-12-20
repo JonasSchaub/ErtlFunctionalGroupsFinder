@@ -139,6 +139,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         tmpExceptionsPrintWriter.println();
         tmpExceptionsPrintWriter.flush();
         tmpExceptionsPrintWriter.close();
+        FileInputStream tmpDBFileInputStream = null;
         ExecutorService executor = null;
         PrintWriter tmpResultsPrintWriter = null;
         boolean tmpHasAnErrorOccurred = false;
@@ -156,7 +157,6 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
                 throw new IllegalArgumentException("The number of threads to use must be at least 1.");
             }
             File tmpDBFile = new File(this.workingPath + anArgs[0]);
-            FileInputStream tmpDBFileInputStream;
             try {
                 tmpDBFileInputStream = new FileInputStream(tmpDBFile);
             } catch (FileNotFoundException | SecurityException anException) {
@@ -251,6 +251,9 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             }
             if (!Objects.isNull(tmpResultsPrintWriter)) {
                 tmpResultsPrintWriter.close();
+            }
+            if (!Objects.isNull(tmpDBFileInputStream)) {
+                tmpDBFileInputStream.close();
             }
             if (tmpHasAnErrorOccurred) {
                 System.exit(1);
