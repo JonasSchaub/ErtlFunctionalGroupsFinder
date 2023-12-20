@@ -142,6 +142,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         FileInputStream tmpDBFileInputStream = null;
         ExecutorService executor = null;
         PrintWriter tmpResultsPrintWriter = null;
+        IteratingSDFReader tmpDBReader = null;
         boolean tmpHasAnErrorOccurred = false;
         try {
             if (anArgs.length != 2) {
@@ -180,7 +181,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             tmpResultsPrintWriter.println("Application initialized. Loading database file named " + anArgs[0] + ".");
             tmpResultsPrintWriter.flush();
             System.out.println("\nApplication initialized. Loading database file named " + anArgs[0] + ".");
-            IteratingSDFReader tmpDBReader = new IteratingSDFReader(tmpDBFileInputStream,
+            tmpDBReader = new IteratingSDFReader(tmpDBFileInputStream,
                     SilentChemObjectBuilder.getInstance(),
                     true);
             List<IAtomContainer> tmpMoleculesList = new LinkedList<>();
@@ -254,6 +255,9 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             }
             if (!Objects.isNull(tmpDBFileInputStream)) {
                 tmpDBFileInputStream.close();
+            }
+            if (!Objects.isNull(tmpDBReader)) {
+                tmpDBReader.close();
             }
             if (tmpHasAnErrorOccurred) {
                 System.exit(1);
