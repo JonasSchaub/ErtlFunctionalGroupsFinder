@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openscience.cdk.tools.test;
+package org.openscience.cdk.tools;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +34,7 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IBond.Order;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IPseudoAtom;
+import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.Mappings;
 import org.openscience.cdk.isomorphism.Pattern;
 import org.openscience.cdk.isomorphism.VentoFoggia;
@@ -41,12 +42,12 @@ import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
-import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Test for ErtlFunctionalGroupsFinder.
@@ -230,6 +231,160 @@ public class ErtlFunctionalGroupsFinderTest {
             String tmpSmilesString = tmpSmiGen.create(tmpFunctionalGroup);
             System.out.println(tmpSmilesString);
         }
+    }
+
+    /**
+     * TODO: Investigate code for possible problems with charged atoms?
+     *
+     * TODO: Test carbon ions.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testChargedMolecules() throws Exception {
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+
+        IAtomContainer tmpChargedASA = tmpSmiPar.parseSmiles("CC(=O)OC1=CC=CC=C1C(=O)[O+]");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpChargedASA);
+        tmpAromaticity.apply(tmpChargedASA);
+
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpChargedASA);
+
+        System.out.println("Charged ASA:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+
+        IAtomContainer tmpNitroPhenol = tmpSmiPar.parseSmiles("C1=CC(=CC=C1[N+](=O)[O-])O");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpNitroPhenol);
+        tmpAromaticity.apply(tmpNitroPhenol);
+
+        tmpFGList = tmpEFGF.find(tmpNitroPhenol);
+
+        System.out.println("Nitrophenol:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+    }
+
+    /**
+     * TODO: Investigate code for possible problems with disconnected structures?
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDisconnectedMolecules() throws Exception {
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+
+        IAtomContainer tmpChlorhexidineDiacetate = tmpSmiPar.parseSmiles("CC(=O)O.CC(=O)O.C1=CC(=CC=C1NC(=NC(=NCCCCCCN=C(N)N=C(N)NC2=CC=C(C=C2)Cl)N)N)Cl");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpChlorhexidineDiacetate);
+        tmpAromaticity.apply(tmpChlorhexidineDiacetate);
+
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpChlorhexidineDiacetate);
+
+        System.out.println("Chlorhexidine Diacetate:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+
+        IAtomContainer tmpSodiumEdetate = tmpSmiPar.parseSmiles("C(CN(CC(=O)[O-])CC(=O)[O-])N(CC(=O)[O-])CC(=O)[O-].[Na+].[Na+].[Na+].[Na+]");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpSodiumEdetate);
+        tmpAromaticity.apply(tmpSodiumEdetate);
+
+        tmpFGList = tmpEFGF.find(tmpSodiumEdetate);
+
+        System.out.println("Sodium edetate:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+    }
+
+    /**
+     *
+     *
+     * Note: all atoms are marked as hetero atoms by EFGF that are not H or C. So, metals and metalloids get treated like
+     * any other hetero atom and should not cause problems.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMetalsMetalloids() throws Exception {
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+
+        IAtomContainer tmpTetraethylOrthosilicate = tmpSmiPar.parseSmiles("CCO[Si](OCC)(OCC)OCC");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
+        tmpAromaticity.apply(tmpTetraethylOrthosilicate);
+
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
+
+        System.out.println("Tetraethyl Orthosilicate:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+
+        IAtomContainer tmpKaolin = tmpSmiPar.parseSmiles("O.O.O=[Al]O[Si](=O)O[Si](=O)O[Al]=O");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpKaolin);
+        tmpAromaticity.apply(tmpKaolin);
+
+        tmpFGList = tmpEFGF.find(tmpKaolin);
+
+        System.out.println("Kaolin:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+
+    }
+
+    //TODO: Clean-up check constraints and add test molecules for these special cases to the testFind#() methods.
+
+    /**
+     * TODO: test complete ChEBI?
+     *
+     * Note: ChEBI lite 3-star subset SDF contains 251 molecules with charges or metal/metalloid atoms or more than one
+     * disconnected structure (comment-in checkConstraints in EFGF.find() method to check).
+     *
+     * @throws Exception
+     */
+    @Test
+    public void readChebiLite3StarSubset() throws Exception {
+        IteratingSDFReader tmpChebiSDFReader = new IteratingSDFReader(
+                ErtlFunctionalGroupsFinderTest.class.getResourceAsStream("ChEBI_lite_3star_subset.sdf"),
+                SilentChemObjectBuilder.getInstance(),
+                false);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        int tmpMoleculeCouter = 0;
+        int tmpExceptionsCounter = 0;
+        while (tmpChebiSDFReader.hasNext()) {
+            IAtomContainer tmpMolecule = null;
+            tmpMoleculeCouter++;
+            try {
+                tmpMolecule = tmpChebiSDFReader.next();
+                AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMolecule);
+                tmpAromaticity.apply(tmpMolecule);
+
+                List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule);
+            } catch (Exception anException) {
+                tmpExceptionsCounter++;
+                if (!Objects.isNull(tmpMolecule)) {
+                    System.out.println(tmpMolecule.getProperty("ChEBI ID") + "," + anException.toString() + "," + tmpMoleculeCouter);
+                } else {
+                    System.out.println("Could not parse molecule! Counter: " + tmpMoleculeCouter);
+                }
+            }
+
+        }
+        System.out.println(tmpMoleculeCouter);
+        System.out.println(tmpExceptionsCounter);
     }
 
     private void testFind(String moleculeSmiles, String[] fGStrings) throws Exception {

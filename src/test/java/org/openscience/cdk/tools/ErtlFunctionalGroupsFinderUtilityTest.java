@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openscience.cdk.tools.test;
+package org.openscience.cdk.tools;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,8 +30,6 @@ import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
-import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
-import org.openscience.cdk.tools.ErtlFunctionalGroupsFinderUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
