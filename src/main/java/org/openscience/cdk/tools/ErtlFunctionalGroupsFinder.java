@@ -182,7 +182,7 @@ public class ErtlFunctionalGroupsFinder {
         bondMap = EdgeToBondMap.withSpaceFor(mol);
         adjList = GraphUtil.toAdjList(mol, bondMap);
 
-        checkConstraints(mol);
+        //checkConstraints(mol);
 
         // atom marking
         markAtoms(mol);
@@ -777,7 +777,7 @@ public class ErtlFunctionalGroupsFinder {
 
         ConnectedComponents cc = new ConnectedComponents(adjList);
         if(cc.nComponents() != 1) {
-            throw new IllegalArgumentException("Input molecule must consist of only a single connected stucture.");
+            throw new IllegalArgumentException("Input molecule must consist of only a single connected structure.");
         }
 
         return true;
