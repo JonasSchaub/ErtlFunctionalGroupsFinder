@@ -236,7 +236,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             }
             tmpResultsPrintWriter.println(tmpExceptionsCounter + " molecules produced an exception.");
             tmpResultsPrintWriter.flush();
-            executor.close();
+            executor.shutdownNow();
             tmpResultsPrintWriter.println();
             tmpResultsPrintWriter.flush();
             tmpResultsPrintWriter.close();
@@ -248,7 +248,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
             }
         } finally {
             if (!Objects.isNull(executor)) {
-                executor.close();
+                executor.shutdownNow();
             }
             if (!Objects.isNull(tmpResultsPrintWriter)) {
                 tmpResultsPrintWriter.close();
