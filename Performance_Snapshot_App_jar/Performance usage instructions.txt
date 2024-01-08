@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 Performance usage instructions with Java 21 (or higher)
 --------------------------------------------------------------------------------
-1. Install Java 21 (or higher) on your machine (if necessary)
+1. Install Java 11 (or higher) on your machine (if necessary)
 2. Copy the content of this sub-folder to a destination directory on your 
    machine with read/write access.
 3. Copy SD-file with your molecule library to the destination directory on your 
@@ -10,15 +10,15 @@ Performance usage instructions with Java 21 (or higher)
 To run a performance test from the command line, go to the destination directory 
 on your machine and type:
 
-java -jar "ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar" "sdFileName" numberOfThreads
+java -jar "ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.1.0.jar" "sdFileName" numberOfThreads
 
 sdFilePathname : Name of the SD-file with your molecule library to test (must be 
                  located in the same directory as 
-                 "ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar")
+                 "ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.1.0.jar")
 numberOfThreads: Number of parallel calculation threads (>= 1)
 
 You may wish to add additional JVM parameters in the command line (e.g. for 
 increased heap size to avoid an "out of memory" exception for large SD-files).
 
 Note: Sub-directory "src" contains the Java source code for 
-"ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar".
+"ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.1.0.jar".
