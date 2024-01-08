@@ -19,7 +19,7 @@ An open implementation of the [Ertl algorithm for functional group identificatio
 See the GitHub repository here: [https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder)
 
 ## Description
-The algorithm for automated functional groups detection and extraction of organic molecules developed by Dr Peter Ertl 
+The algorithm for automated functional groups detection and extraction of organic molecules developed by Dr Peter Ertl
 is implemented on the basis of the [Chemistry Development Kit (CDK)](https://github.com/cdk/cdk). <br/>
 This open reimplementation named ErtlFunctionalGroupsFinder is described in a [scientific article](https://doi.org/10.1186/s13321-019-0361-8). <br/>
 <br>ErtlFunctionalGroupsFinder is also available in the open Java rich client application MORTAR ('MOlecule fRagmenTation fRamework')
@@ -37,17 +37,17 @@ Among other things, it tests whether the correct functional groups are detected 
 
 ### Test resources
 The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src/test/resources">"resources"</a> subfolder
-contains an SD file with a small subset of small molecules taken from the [Chemical Entities of Biological Interest (ChEBI) database](http://www.ebi.ac.uk/chebi) 
-for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) 
+contains an SD file with a small subset of small molecules taken from the [Chemical Entities of Biological Interest (ChEBI) database](http://www.ebi.ac.uk/chebi)
+for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
 which allows distribution and modification.
 
-### Performance Test CMD Application
-The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Test_jar">"Performance_Test_jar"</a>
-contains the executable JAVA archive <i>ErtlFunctionalGroupsFinderPerformanceTest.jar</i>.
-It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find() 
+### Performance Snapshot CMD Application
+The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
+contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar</i>.
+It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find()
 method under parallelization on multiple threads.
-For more details see the file 
-<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Test_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
+For more details see the file
+<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
 
 ## Example initialization and usage of ErtlFunctionalGroupsFinder
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
@@ -68,27 +68,27 @@ be pre-installed.
 
 ## Dependencies
 **Needs to be pre-installed:**
-* Java Development Kit (JDK) version 21
-    * [Adoptium OpenJDK](https://adoptium.net) (as one possible source of the JDK)
-* Gradle version 8.5
-    * [Gradle Build Tool](https://gradle.org)
+* Java Development Kit (JDK) version 11+
+  * [Adoptium OpenJDK](https://adoptium.net) (as one possible source of the JDK)
+* Gradle version 8.5+
+  * [Gradle Build Tool](https://gradle.org)
 
 **Managed by Gradle:**
 * Chemistry Development Kit (CDK) version 2.9
-    * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
-    * License: GNU Lesser General Public License 2.1
+  * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
+  * License: GNU Lesser General Public License 2.1
 * JUnit Jupiter version 5.9.1
-    * [JUnit ](https://junit.org/junit5/)
-    * License: Eclipse Public License - v 2.0
+  * [JUnit ](https://junit.org/junit5/)
+  * License: Eclipse Public License - v 2.0
 
 # Acknowledgments
 Project team: Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny.<br/>
 <br>
 Logo: [Kohulan Rajan](https://github.com/Kohulan) <br>
 <br>
-The authors thank Peter Ertl for describing his algorithm in a way that allowed easy re-implementation. 
-This is not always the case. We also thank him for valuable discussions. 
-<br>We appreciate help from Egon Willighagen and John Mayfield with the CDK integration 
+The authors thank Peter Ertl for describing his algorithm in a way that allowed easy re-implementation.
+This is not always the case. We also thank him for valuable discussions.
+<br>We appreciate help from Egon Willighagen and John Mayfield with the CDK integration
 and from Felix Bänsch for unbiased release testing.
 
 # References
