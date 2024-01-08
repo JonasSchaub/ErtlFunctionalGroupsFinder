@@ -65,9 +65,9 @@ be pre-installed.
 
 ## Dependencies
 **Needs to be pre-installed:**
-* Java Development Kit (JDK) version 21
+* Java Development Kit (JDK) version 11+
     * [Adoptium OpenJDK](https://adoptium.net) (as one possible source of the JDK)
-* Gradle version 8.5
+* Gradle version 8.5+
     * [Gradle Build Tool](https://gradle.org)
 
 **Managed by Gradle:**
