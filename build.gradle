@@ -43,9 +43,9 @@ version = '1.2.0.0'
 
 //Creates javadoc and sources jars
 java {
-    //toolchain {
-      //  languageVersion = JavaLanguageVersion.of(21)
-    //}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
     withJavadocJar()
     withSourcesJar()
 }
