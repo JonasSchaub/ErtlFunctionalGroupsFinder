@@ -718,7 +718,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
      * check methods for filtering and preprocessing in this case
      */
-    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException {
+    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
         return ErtlFunctionalGroupsFinderUtility.findMarkedAtoms(aMolecule, true);
     }
 
@@ -735,7 +735,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
      * check methods for filtering and preprocessing in this case
      */
-    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule, boolean areSingleAtomsFiltered) throws NullPointerException, IllegalArgumentException {
+    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule, boolean areSingleAtomsFiltered) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
         Objects.requireNonNull(aMolecule, "Given molecule is null.");
         if (aMolecule.isEmpty()) {
             return new ArrayList<IAtomContainer>(0);

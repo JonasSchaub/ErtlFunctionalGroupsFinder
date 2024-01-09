@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
@@ -169,18 +170,18 @@ public class ErtlFunctionalGroupsFinder {
     /**
      * CDK logging tool instance for this class.
      */
-    private static final ILoggingTool LOGGING_TOOL = LoggingToolFactory.createLoggingTool(ErtlFunctionalGroupsFinder.class);
+    public static final ILoggingTool LOGGING_TOOL = LoggingToolFactory.createLoggingTool(ErtlFunctionalGroupsFinder.class);
     //
     /**
      * Property name for marking carbonyl carbon atoms via IAtom properties.
      */
-    private static final String CARBONYL_C_MARKER = "EFGF-Carbonyl-C";
+    public static final String CARBONYL_C_MARKER = "EFGF-Carbonyl-C";
     //
     /**
      * Set of atomic numbers that are accepted in the input molecule if the strict input restrictions are activated
      * (excludes metal and metalloid elements, only organic elements included).
      */
-    private static final Set<Integer> NONMETAL_ATOMIC_NUMBERS = Set.of(1, 2, 6, 7, 8, 9, 10, 15, 16, 17, 18, 34, 35, 36, 53, 54, 86);
+    public static final Set<Integer> NONMETAL_ATOMIC_NUMBERS = Set.of(1, 2, 6, 7, 8, 9, 10, 15, 16, 17, 18, 34, 35, 36, 53, 54, 86);
     //
     /**
      * Environment mode setting, defining whether environments should be generalized (default) or kept as whole.
@@ -227,141 +228,163 @@ public class ErtlFunctionalGroupsFinder {
      * Constructor for ErtlFunctionalGroupsFinder that allows setting the treatment of environments in the identified
      * functional groups. Default: environments will be generalized; no generalization: environments will be kept as whole.
      *
-     * @param envMode mode for treating functional group environments (see {@link ErtlFunctionalGroupsFinder.Mode}).
+     * @param anEnvMode mode for treating functional group environments (see {@link ErtlFunctionalGroupsFinder.Mode}).
      */
-    public ErtlFunctionalGroupsFinder(Mode envMode) {
-        this.envMode = envMode;
+    public ErtlFunctionalGroupsFinder(Mode anEnvMode) {
+        Objects.requireNonNull(anEnvMode, "Given environment mode cannot be null.");
+        this.envMode = anEnvMode;
     }
     //
     /**
-     * Find all functional groups contained in a molecule.
+     * Allows setting the treatment of functional group environments after extraction. Default: environments will be
+     * generalized; no generalization: environments will be kept as whole.
      *
-     * NOTE: The input must consist of one connected structure and may not contain charged atoms, metals or metalloids.
-     *
-     * @param container the molecule which contains the functional groups (may not contain charged atoms, metals,
-     *                  metalloids or unconnected components!)
-     * @return a list with all functional groups found in the molecule.
-     */
-    public List<IAtomContainer> find(IAtomContainer container){
-        return find(container, true);
-    }
-
-    /**
-     * Find all functional groups contained in a molecule.
-     *
-     * NOTE: The input must consist of one connected structure and may not contain charged atoms, metals or metalloids.
-     *
-     * @param container the molecule which contains the functional groups (may not contain charged atoms, metals,
-     *                  metalloids or unconnected components!)
-     * @param clone Use 'false' to reuse the input container's bonds and atoms in the extraction of the functional
-     *                groups. This may speed up the extraction and lower the memory consumption for processing large
-     *                amounts of data but corrupts the original input container.
-     *              Use 'true' to work with a clone and leave the input container intact (default).
-     * @return a list with all functional groups found in the molecule.
-     */
-    public List<IAtomContainer> find(IAtomContainer container, boolean clone){
-        // work with a clone?
-        IAtomContainer mol;
-        if(clone){
-            try {
-                mol = container.clone();
-            } catch (CloneNotSupportedException e) {
-                throw new IllegalStateException("Atom container could not be cloned");
-            }
-        }
-        else{
-            mol = container;
-        }
-
-        // init GraphUtil & EdgeToBondMap
-        bondMap = EdgeToBondMap.withSpaceFor(mol);
-        adjList = GraphUtil.toAdjList(mol, bondMap);
-
-        //checkConstraints(mol);
-
-        // atom marking
-        markAtoms(mol);
-
-        // extract raw groups
-        List<IAtomContainer> groups = extractGroups(mol);
-
-        // handle environment
-        if(envMode == Mode.DEFAULT) {
-            expandGeneralizedEnvironments(groups);
-        }
-        else if (envMode == Mode.NO_GENERALIZATION) {
-            expandFullEnvironments(groups);
-        }
-        else {
-            throw new IllegalStateException("Unknown mode.");
-        }
-
-        // clear fields
-        bondMap = null;
-        adjList = null;
-        markedAtoms = null;
-        aromaticHeteroAtomIndicesToIsInGroupBoolMap = null;
-        markedAtomToConnectedEnvCMap = null;
-
-        return groups;
-    }
-
-    /**
-     * TODO
+     * @param anEnvMode mode for treating functional group environments (see {@link ErtlFunctionalGroupsFinder.Mode}).
      */
     public void setEnvMode(Mode anEnvMode) {
-
+        Objects.requireNonNull(anEnvMode, "Given environment mode cannot be null.");
+        this.envMode = anEnvMode;
+    }
+    //
+    /**
+     * Returns the current setting for the treatment of functional group environments after extraction.
+     *
+     * @return currently set environment mode
+     */
+    public Mode getEnvMode() {
+        return this.envMode;
+    }
+    //
+    /**
+     * Find all functional groups in a molecule. The input atom container instance is cloned before processing to leave
+     * the input container intact.
+     * <p>
+     *     Note: The strict input restrictions from previous versions (no charged atoms, metals, metalloids or
+     *     unconnected components) do not apply anymore by default. They can be turned on again in another variant of
+     *     this method below.
+     * </p>
+     *
+     * @param aMolecule the molecule to identify functional groups in
+     * @throws CloneNotSupportedException if cloning is not possible
+     * @return a list with all functional groups found in the molecule
+     */
+    public List<IAtomContainer> find(IAtomContainer aMolecule) throws CloneNotSupportedException {
+        return this.find(aMolecule, true, false);
+    }
+    //
+    /**
+     * Find all functional groups in a molecule.
+     * <p>
+     *     Note: The strict input restrictions from previous versions (no charged atoms, metals, metalloids or
+     *     unconnected components) do not apply anymore by default. They can be turned on again in another variant of
+     *     this method below.
+     * </p>
+     *
+     * @param aMolecule the molecule to identify functional groups in
+     * @param aShouldInputBeCloned use 'false' to reuse the input container's bonds and atoms in the extraction of the functional
+     *                             groups; this may speed up the extraction and lower the memory consumption for processing large
+     *                             amounts of data but corrupts the original input container; use 'true' to work with a clone and
+     *                             leave the input container intact
+     * @throws CloneNotSupportedException if cloning is not possible
+     * @return a list with all functional groups found in the molecule
+     */
+    public List<IAtomContainer> find (IAtomContainer aMolecule, boolean aShouldInputBeCloned) throws CloneNotSupportedException {
+        return this.find(aMolecule, aShouldInputBeCloned, false);
     }
 
     /**
-     * TODO
+     * Find all functional groups in a molecule.
+     *
+     * @param aMolecule the molecule to identify functional groups in
+     * @param aShouldInputBeCloned use 'false' to reuse the input container's bonds and atoms in the extraction of the functional
+     *                             groups; this may speed up the extraction and lower the memory consumption for processing large
+     *                             amounts of data but corrupts the original input container; use 'true' to work with a clone and
+     *                             leave the input container intact
+     * @param anAreInputRestrictionsApplied if true, the input must consist of one connected structure and may not
+     *                                      contain charged atoms, metals or metalloids; an IllegalArgumentException will
+     *                                      be thrown otherwise
+     * @throws CloneNotSupportedException if cloning is not possible
+     * @throws IllegalArgumentException if input restrictions are applied and the given molecule does not fulfill them
+     * @return a list with all functional groups found in the molecule
      */
-    public void isFunctionalGroupEnvironmentGeneralized(boolean aGeneralizeEnvironment) {
-
+    public List<IAtomContainer> find(IAtomContainer aMolecule, boolean aShouldInputBeCloned, boolean anAreInputRestrictionsApplied)
+            throws CloneNotSupportedException, IllegalArgumentException {
+        IAtomContainer tmpMolecule;
+        if (aShouldInputBeCloned) {
+            tmpMolecule = aMolecule.clone();
+        } else {
+            tmpMolecule = aMolecule;
+        }
+        if (anAreInputRestrictionsApplied) {
+            this.checkConstraints(tmpMolecule);
+        }
+        for (IAtom tmpAtom : tmpMolecule.atoms()) {
+            if(Objects.isNull(tmpAtom.getImplicitHydrogenCount())) {
+                tmpAtom.setImplicitHydrogenCount(0);
+            }
+        }
+        this.bondMap = EdgeToBondMap.withSpaceFor(tmpMolecule);
+        this.adjList = GraphUtil.toAdjList(tmpMolecule, this.bondMap);
+        this.markAtoms(tmpMolecule);
+        // extract raw groups
+        List<IAtomContainer> tmpFunctionalGroupsList = this.extractGroups(tmpMolecule);
+        // handle environment
+        if (this.envMode == Mode.DEFAULT) {
+            this.expandGeneralizedEnvironments(tmpFunctionalGroupsList);
+        } else if (this.envMode == Mode.NO_GENERALIZATION) {
+            this.expandFullEnvironments(tmpFunctionalGroupsList);
+        } else {
+            throw new IllegalArgumentException("Unknown mode.");
+        }
+        this.clearCache();
+        return tmpFunctionalGroupsList;
     }
 
     /**
-     * TODO
+     * Clear caches related to the input molecule.
      */
-    private void clearChache() {
-
+    private void clearCache() {
+        this.bondMap = null;
+        this.adjList = null;
+        this.markedAtoms = null;
+        this.aromaticHeteroAtomIndicesToIsInGroupBoolMap = null;
+        this.markedAtomToConnectedEnvCMap = null;
     }
 
     /**
      * Mark all atoms and store them in a set for further processing.
      *
-     * @param molecule Molecule with atoms to mark
+     * @param aMolecule molecule with atoms to mark
      */
-    private void markAtoms(IAtomContainer molecule) {
-        if(isDbg()) LOGGING_TOOL.debug("########## Starting search for atoms to mark ... ##########");
-
+    private void markAtoms(IAtomContainer aMolecule) {
+        if (this.isDbg()) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("########## Starting search for atoms to mark ... ##########");
+        }
         // store marked atoms
-        markedAtoms = new HashSet<Integer>(molecule.getAtomCount()); //Sets.newHashSetWithExpectedSize(molecule.getAtomCount());
+        this.markedAtoms = new HashSet<>((int) ((aMolecule.getAtomCount() / 0.75f) + 2), 0.75f);
         // store aromatic heteroatoms
-        aromaticHeteroAtomIndicesToIsInGroupBoolMap = new HashMap<>();
-
-        for(int idx = 0; idx < molecule.getAtomCount(); idx++) {
-            // skip atoms that already got marked in a previous iteration
-            if(markedAtoms.contains(idx)) {
+        this.aromaticHeteroAtomIndicesToIsInGroupBoolMap = new HashMap<>((int) ((aMolecule.getAtomCount() / 0.75f) + 2), 0.75f);
+        //TODO set and use a more explicit and trustworthy index?
+        for (int idx = 0; idx < aMolecule.getAtomCount(); idx++) {
+            // skip atoms that were already marked in a previous iteration
+            if (this.markedAtoms.contains(idx)) {
                 continue;
             }
-            IAtom cAtom = molecule.getAtom(idx);
-            // skip aromatic atoms but add them to set
-            if(cAtom.isAromatic()) {
-                if(isHeteroatom(cAtom)) {
-                    aromaticHeteroAtomIndicesToIsInGroupBoolMap.put(idx, false);
+            IAtom tmpAtom = aMolecule.getAtom(idx);
+            // skip aromatic atoms but add aromatic HETERO-atoms to map for later processing
+            if (tmpAtom.isAromatic()) {
+                if (ErtlFunctionalGroupsFinder.isHeteroatom(tmpAtom)) {
+                    this.aromaticHeteroAtomIndicesToIsInGroupBoolMap.put(idx, false);
                 }
                 continue;
             }
-
-            int atomicNr = cAtom.getAtomicNumber();
-
+            int tmpAtomicNr = tmpAtom.getAtomicNumber();
             // if C...
-            if(atomicNr == 6) {
+            if (tmpAtomicNr == 6) {
                 boolean isMarked = false;		// to detect if foor loop ran with or without marking the C atom
                 int oNSCounter = 0;				// count for the number of connected O, N & S atoms
                 for(int connectedIdx : adjList[idx]) {
-                    IAtom connectedAtom = molecule.getAtom(connectedIdx);
+                    IAtom connectedAtom = aMolecule.getAtom(connectedIdx);
                     IBond connectedBond = bondMap.get(idx, connectedIdx);
 
                     // if connected to Heteroatom or C in aliphatic double or triple bond... [CONDITIONS 2.1 & 2.2]
@@ -377,14 +400,14 @@ public class ErtlFunctionalGroupsFinder {
 
                         // set the current atom as marked and break out of connected atoms
                         if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.1/2.2",
-                                idx, cAtom.getSymbol()));
+                                idx, tmpAtom.getSymbol()));
                         isMarked = true;
 
                         // but check for carbonyl-C before break
                         if(connectedAtom.getAtomicNumber() == 8 && connectedBond.getOrder() == Order.DOUBLE
                                 && adjList[idx].length == 3) {
                             if(isDbg()) LOGGING_TOOL.debug("                     - was flagged as Carbonly-C");
-                            cAtom.setProperty(CARBONYL_C_MARKER, true);
+                            tmpAtom.setProperty(CARBONYL_C_MARKER, true);
                         }
 
                         break;
@@ -412,10 +435,10 @@ public class ErtlFunctionalGroupsFinder {
                             }
                             if(isAllSingleBonds) {
                                 oNSCounter++;
-                                if(oNSCounter > 1 && adjList[idx].length + cAtom.getImplicitHydrogenCount() == 4) {
+                                if(oNSCounter > 1 && adjList[idx].length + tmpAtom.getImplicitHydrogenCount() == 4) {
                                     // set as marked and break out of connected atoms
                                     if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.3",
-                                            idx, cAtom.getSymbol()));
+                                            idx, tmpAtom.getSymbol()));
                                     isMarked = true;
                                     break;
                                 }
@@ -423,11 +446,11 @@ public class ErtlFunctionalGroupsFinder {
                         }
                         // if part of oxirane, aziridine and thiirane ring... [CONDITION 2.4]
                         for(int connectedInSphere2Idx : adjList[connectedIdx]) {
-                            IAtom connectedInSphere2Atom = molecule.getAtom(connectedInSphere2Idx);
+                            IAtom connectedInSphere2Atom = aMolecule.getAtom(connectedInSphere2Idx);
                             if(connectedInSphere2Atom.getAtomicNumber() == 6) {
                                 for(int connectedInSphere3Idx : adjList[connectedInSphere2Idx]) {
-                                    IAtom connectedInSphere3Atom = molecule.getAtom(connectedInSphere3Idx);
-                                    if(connectedInSphere3Atom.equals(cAtom)) {
+                                    IAtom connectedInSphere3Atom = aMolecule.getAtom(connectedInSphere3Idx);
+                                    if(connectedInSphere3Atom.equals(tmpAtom)) {
                                         // set connected atoms as marked
                                         if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.4",
                                                 connectedInSphere2Idx, connectedInSphere2Atom.getSymbol()));
@@ -437,7 +460,7 @@ public class ErtlFunctionalGroupsFinder {
                                         markedAtoms.add(connectedInSphere3Idx);
                                         // set current atom as marked and break out of connected atoms
                                         if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.4",
-                                                idx, cAtom.getSymbol()));
+                                                idx, tmpAtom.getSymbol()));
                                         isMarked = true;
                                         break;
                                     }
@@ -453,11 +476,11 @@ public class ErtlFunctionalGroupsFinder {
                 // if none of the conditions 2.X apply, we have an unmarked C (not relevant here)
             }
             // if H...
-            else if (atomicNr == 1){
+            else if (tmpAtomicNr == 1){
                 // convert to implicit H
                 IAtom connectedAtom;
                 try {
-                    connectedAtom = molecule.getAtom(adjList[idx][0]);
+                    connectedAtom = aMolecule.getAtom(adjList[idx][0]);
                 }
                 catch(ArrayIndexOutOfBoundsException e) {
                     break;
@@ -474,12 +497,12 @@ public class ErtlFunctionalGroupsFinder {
             }
             // if heteroatom... (CONDITION 1)
             else {
-                if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 1", idx, cAtom.getSymbol()));
+                if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 1", idx, tmpAtom.getSymbol()));
                 markedAtoms.add(idx);
                 continue;
             }
         }
-        if(isDbg()) LOGGING_TOOL.debug(String.format("########## End of search. Marked %d/%d atoms. ##########", markedAtoms.size(), molecule.getAtomCount()));
+        if(isDbg()) LOGGING_TOOL.debug(String.format("########## End of search. Marked %d/%d atoms. ##########", markedAtoms.size(), aMolecule.getAtomCount()));
     }
 
     /**
@@ -885,9 +908,6 @@ public class ErtlFunctionalGroupsFinder {
             }
             if(!isNonmetal(atom)) {
                 throw new IllegalArgumentException("Input molecule must not contain metals or metalloids.");
-            }
-            if(atom.getImplicitHydrogenCount() == null) {
-                atom.setImplicitHydrogenCount(0);
             }
         }
 
