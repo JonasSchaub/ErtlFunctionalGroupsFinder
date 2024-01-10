@@ -716,6 +716,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * @return List of IAtomContainer objects representing the detected functional groups
      * @throws NullPointerException if the given atom container is null
      * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
+     * @throws CloneNotSupportedException if cloning is not possible
      * check methods for filtering and preprocessing in this case
      */
     public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
@@ -733,6 +734,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * @return List of IAtomContainer objects representing the detected functional groups
      * @throws NullPointerException if the given atom container is null
      * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
+     * @throws CloneNotSupportedException if cloning is not possible
      * check methods for filtering and preprocessing in this case
      */
     public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule, boolean areSingleAtomsFiltered) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {

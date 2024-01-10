@@ -381,130 +381,163 @@ public class ErtlFunctionalGroupsFinder {
             int tmpAtomicNr = tmpAtom.getAtomicNumber();
             // if C...
             if (tmpAtomicNr == 6) {
-                boolean isMarked = false;		// to detect if foor loop ran with or without marking the C atom
-                int oNSCounter = 0;				// count for the number of connected O, N & S atoms
-                for(int connectedIdx : adjList[idx]) {
-                    IAtom connectedAtom = aMolecule.getAtom(connectedIdx);
-                    IBond connectedBond = bondMap.get(idx, connectedIdx);
+                // to detect if for loop ran with or without marking the C atom
+                boolean tmpIsMarked = false;
+                // count for the number of connected O, N & S atoms to detect acetal carbons
+                int tmpConnectedONSatomsCounter = 0;
+                for (int tmpConnectedIdx : this.adjList[idx]) {
+                    IAtom tmpConnectedAtom = aMolecule.getAtom(tmpConnectedIdx);
+                    IBond tmpConnectedBond = this.bondMap.get(idx, tmpConnectedIdx);
 
-                    // if connected to Heteroatom or C in aliphatic double or triple bond... [CONDITIONS 2.1 & 2.2]
-                    if(connectedAtom.getAtomicNumber() != 1 && ((connectedBond.getOrder() == Order.DOUBLE
-                            || connectedBond.getOrder() == Order.TRIPLE) && !connectedBond.isAromatic())) {
+                    // if connected to heteroatom or C in aliphatic double or triple bond... [CONDITIONS 2.1 & 2.2]
+                    if (tmpConnectedAtom.getAtomicNumber() != 1
+                            && ((tmpConnectedBond.getOrder() == Order.DOUBLE || tmpConnectedBond.getOrder() == Order.TRIPLE)
+                            && !tmpConnectedBond.isAromatic())) {
 
-                        // set the connected atom as marked
-                        if(markedAtoms.add(connectedIdx)) {
-                            String connectedAtomCondition = connectedAtom.getAtomicNumber() == 6 ? "2.1/2.2" : "1";
-                            if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition %s",
-                                    connectedIdx, connectedAtom.getSymbol(), connectedAtomCondition));
+                        // set the *connected* atom as marked (add() true if this set did not already contain the specified element)
+                        if (this.markedAtoms.add(tmpConnectedIdx)) {
+                            if (ErtlFunctionalGroupsFinder.isDbg()) {
+                                ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                        "Marking Atom #%d (%s) - Met condition %s",
+                                        tmpConnectedIdx,
+                                        tmpConnectedAtom.getSymbol(),
+                                        tmpConnectedAtom.getAtomicNumber() == 6 ? "2.1/2.2" : "1"));
+                            }
                         }
-
-                        // set the current atom as marked and break out of connected atoms
-                        if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.1/2.2",
-                                idx, tmpAtom.getSymbol()));
-                        isMarked = true;
-
+                        // set the *current* atom as marked and break out of connected atoms
+                        tmpIsMarked = true;
+                        if (ErtlFunctionalGroupsFinder.isDbg()) {
+                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                    "Marking Atom #%d (%s) - Met condition 2.1/2.2",
+                                    idx,
+                                    tmpAtom.getSymbol()));
+                        }
                         // but check for carbonyl-C before break
-                        if(connectedAtom.getAtomicNumber() == 8 && connectedBond.getOrder() == Order.DOUBLE
-                                && adjList[idx].length == 3) {
-                            if(isDbg()) LOGGING_TOOL.debug("                     - was flagged as Carbonly-C");
+                        if (tmpConnectedAtom.getAtomicNumber() == 8
+                                && tmpConnectedBond.getOrder() == Order.DOUBLE
+                                && this.adjList[idx].length == 3) {
                             tmpAtom.setProperty(CARBONYL_C_MARKER, true);
+                            if (ErtlFunctionalGroupsFinder.isDbg())  {
+                                ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("- was flagged as Carbonly-C");
+                            }
                         }
-
+                        // break out of connected atoms
                         break;
-                    }
-                    // if connected to O/N/S in single bond...
-                    else if((connectedAtom.getAtomicNumber() == 7
-                            || connectedAtom.getAtomicNumber() == 8
-                            || connectedAtom.getAtomicNumber() == 16)
-                            && connectedBond.getOrder() == Order.SINGLE){
+                    } else if ((tmpConnectedAtom.getAtomicNumber() == 7
+                            || tmpConnectedAtom.getAtomicNumber() == 8
+                            || tmpConnectedAtom.getAtomicNumber() == 16)
+                            && tmpConnectedBond.getOrder() == Order.SINGLE) {
+                        // if connected to O/N/S in single bond...
                         // if connected O/N/S is not aromatic...
-                        if(!connectedAtom.isAromatic()) {
+                        if (!tmpConnectedAtom.isAromatic()) {
                             // set the connected O/N/S atom as marked
-                            if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 1",
-                                    connectedIdx, connectedAtom.getSymbol()));
-                            markedAtoms.add(connectedIdx);
-
+                            this.markedAtoms.add(tmpConnectedIdx);
+                            if (ErtlFunctionalGroupsFinder.isDbg()) {
+                                ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                        "Marking Atom #%d (%s) - Met condition 1",
+                                        tmpConnectedIdx,
+                                        tmpConnectedAtom.getSymbol()));
+                            }
                             // if "acetal C" (2+ O/N/S in single bonds connected to sp3-C)... [CONDITION 2.3]
-                            boolean isAllSingleBonds = true;
-                            for(int connectedInSphere2Idx : adjList[connectedIdx]) {
-                                IBond sphere2Bond = bondMap.get(connectedIdx, connectedInSphere2Idx);
-                                if(sphere2Bond.getOrder() != Order.SINGLE) {
-                                    isAllSingleBonds = false;
+                            boolean tmpIsAllSingleBonds = true;
+                            for (int tmpConnectedInSphere2Idx : this.adjList[tmpConnectedIdx]) {
+                                IBond tmpSphere2Bond = this.bondMap.get(tmpConnectedIdx, tmpConnectedInSphere2Idx);
+                                if (tmpSphere2Bond.getOrder() != Order.SINGLE) {
+                                    tmpIsAllSingleBonds = false;
                                     break;
                                 }
                             }
-                            if(isAllSingleBonds) {
-                                oNSCounter++;
-                                if(oNSCounter > 1 && adjList[idx].length + tmpAtom.getImplicitHydrogenCount() == 4) {
+                            if (tmpIsAllSingleBonds) {
+                                tmpConnectedONSatomsCounter++;
+                                if (tmpConnectedONSatomsCounter > 1 && this.adjList[idx].length + tmpAtom.getImplicitHydrogenCount() == 4) {
                                     // set as marked and break out of connected atoms
-                                    if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.3",
-                                            idx, tmpAtom.getSymbol()));
-                                    isMarked = true;
+                                    tmpIsMarked = true;
+                                    if (ErtlFunctionalGroupsFinder.isDbg()) {
+                                        ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                                "Marking Atom #%d (%s) - Met condition 2.3",
+                                                idx,
+                                                tmpAtom.getSymbol()));
+                                    }
                                     break;
                                 }
                             }
                         }
-                        // if part of oxirane, aziridine and thiirane ring... [CONDITION 2.4]
-                        for(int connectedInSphere2Idx : adjList[connectedIdx]) {
-                            IAtom connectedInSphere2Atom = aMolecule.getAtom(connectedInSphere2Idx);
-                            if(connectedInSphere2Atom.getAtomicNumber() == 6) {
-                                for(int connectedInSphere3Idx : adjList[connectedInSphere2Idx]) {
-                                    IAtom connectedInSphere3Atom = aMolecule.getAtom(connectedInSphere3Idx);
-                                    if(connectedInSphere3Atom.equals(tmpAtom)) {
+                        // if part of oxirane, aziridine, or thiirane ring... [CONDITION 2.4]
+                        for (int tmpConnectedInSphere2Idx : this.adjList[tmpConnectedIdx]) {
+                            IAtom tmpConnectedInSphere2Atom = aMolecule.getAtom(tmpConnectedInSphere2Idx);
+                            if (tmpConnectedInSphere2Atom.getAtomicNumber() == 6) {
+                                for (int tmpConnectedInSphere3Idx : this.adjList[tmpConnectedInSphere2Idx]) {
+                                    IAtom tmpConnectedInSphere3Atom = aMolecule.getAtom(tmpConnectedInSphere3Idx);
+                                    if (tmpConnectedInSphere3Atom.equals(tmpAtom)) {
                                         // set connected atoms as marked
-                                        if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.4",
-                                                connectedInSphere2Idx, connectedInSphere2Atom.getSymbol()));
-                                        if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.4",
-                                                connectedInSphere3Idx, connectedInSphere3Atom.getSymbol()));
-                                        markedAtoms.add(connectedInSphere2Idx);
-                                        markedAtoms.add(connectedInSphere3Idx);
+                                        this.markedAtoms.add(tmpConnectedInSphere2Idx);
+                                        this.markedAtoms.add(tmpConnectedInSphere3Idx);
+                                        if (ErtlFunctionalGroupsFinder.isDbg()) {
+                                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                                    "Marking Atom #%d (%s) - Met condition 2.4",
+                                                    tmpConnectedInSphere2Idx,
+                                                    tmpConnectedInSphere2Atom.getSymbol()));
+                                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                                    "Marking Atom #%d (%s) - Met condition 2.4",
+                                                    tmpConnectedInSphere3Idx,
+                                                    tmpConnectedInSphere3Atom.getSymbol()));
+                                        }
                                         // set current atom as marked and break out of connected atoms
-                                        if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 2.4",
-                                                idx, tmpAtom.getSymbol()));
-                                        isMarked = true;
+                                        tmpIsMarked = true;
+                                        if (ErtlFunctionalGroupsFinder.isDbg()) {
+                                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                                    "Marking Atom #%d (%s) - Met condition 2.4",
+                                                    idx,
+                                                    tmpAtom.getSymbol()));
+                                        }
                                         break;
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-                if(isMarked) {
-                    markedAtoms.add(idx);
+                        } //end of for loop iterating over second sphere atoms
+                    } // end of else if connected to O/N/S in single bond
+                } //end of for loop that iterates over all connected atoms of the carbon atom
+                if (tmpIsMarked) {
+                    this.markedAtoms.add(idx);
                     continue;
                 }
                 // if none of the conditions 2.X apply, we have an unmarked C (not relevant here)
-            }
-            // if H...
-            else if (tmpAtomicNr == 1){
+            } else if (tmpAtomicNr == 1){
+                // if H...
                 // convert to implicit H
-                IAtom connectedAtom;
+                IAtom tmpConnectedAtom;
                 try {
-                    connectedAtom = aMolecule.getAtom(adjList[idx][0]);
-                }
-                catch(ArrayIndexOutOfBoundsException e) {
+                    tmpConnectedAtom = aMolecule.getAtom(this.adjList[idx][0]);
+                } catch(ArrayIndexOutOfBoundsException anException) {
+                    //TODO: do sth here?
                     break;
                 }
-
-
-                if(connectedAtom.getImplicitHydrogenCount() == null) {
-                    connectedAtom.setImplicitHydrogenCount(1);
+                if (Objects.isNull(tmpConnectedAtom.getImplicitHydrogenCount())) {
+                    tmpConnectedAtom.setImplicitHydrogenCount(1);
+                } else {
+                    tmpConnectedAtom.setImplicitHydrogenCount(tmpConnectedAtom.getImplicitHydrogenCount() + 1);
                 }
-                else {
-                    connectedAtom.setImplicitHydrogenCount(connectedAtom.getImplicitHydrogenCount() + 1);
+                continue;
+            } else {
+                // if heteroatom... (CONDITION 1)
+                this.markedAtoms.add(idx);
+                if (ErtlFunctionalGroupsFinder.isDbg()) {
+                    ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                            "Marking Atom #%d (%s) - Met condition 1",
+                            idx,
+                            tmpAtom.getSymbol()));
                 }
                 continue;
             }
-            // if heteroatom... (CONDITION 1)
-            else {
-                if(isDbg()) LOGGING_TOOL.debug(String.format("Marking Atom #%d (%s) - Met condition 1", idx, tmpAtom.getSymbol()));
-                markedAtoms.add(idx);
-                continue;
-            }
+        } //end of for loop that iterates over all atoms in the mol
+        if (ErtlFunctionalGroupsFinder.isDbg()) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                    "########## End of search. Marked %d/%d atoms. ##########",
+                    this.markedAtoms.size(),
+                    aMolecule.getAtomCount()));
         }
-        if(isDbg()) LOGGING_TOOL.debug(String.format("########## End of search. Marked %d/%d atoms. ##########", markedAtoms.size(), aMolecule.getAtomCount()));
     }
-
+    //
     /**
      * Searches the molecule for groups of connected marked atoms and extracts each as a new functional group.
      * The extraction process includes marked atom's "environments". Connected H's are captured implicitly.
@@ -897,8 +930,8 @@ public class ErtlFunctionalGroupsFinder {
         return groups;
     }
 
-    private boolean isDbg() {
-        return LOGGING_TOOL.isDebugEnabled();
+    private static boolean isDbg() {
+        return ErtlFunctionalGroupsFinder.LOGGING_TOOL.isDebugEnabled();
     }
 
     private boolean checkConstraints(IAtomContainer molecule) {
