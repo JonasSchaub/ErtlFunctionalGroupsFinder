@@ -169,7 +169,8 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
-     * CDK logging tool instance for this class.
+     * CDK logging tool instance for this class. Use ErtlFunctionalGroupsFinder.LOGGING_TOOL.setLevel(ILoggingTool.DEBUG);
+     * to activate debug messages.
      */
     public static final ILoggingTool LOGGING_TOOL = LoggingToolFactory.createLoggingTool(ErtlFunctionalGroupsFinder.class);
     //
@@ -733,54 +734,65 @@ public class ErtlFunctionalGroupsFinder {
                     }
                 } else if (ErtlFunctionalGroupsFinder.isHeteroatom(tmpAtom)) {
                     // env is null and marked atoms is a hetero atom -> single aromatic heteroatom
-                    int rAtomCount = tmpAtom.getValency();
-                    Integer hCount = tmpAtom.getImplicitHydrogenCount();
-                    if(hCount != null && hCount != 0) {
+                    int tmpRAtomCount = tmpAtom.getValency();
+                    Integer tmpAtomImplicitHydrogenCount = tmpAtom.getImplicitHydrogenCount();
+                    if (tmpAtomImplicitHydrogenCount != null && tmpAtomImplicitHydrogenCount != 0) {
                         tmpAtom.setImplicitHydrogenCount(0);
                     }
-                    String atomTypeName = tmpAtom.getAtomTypeName();
-                    if(isDbg()) LOGGING_TOOL.debug(String.format("   - found single aromatic heteroatom (%s, Atomtype %s). Adding %d R-Atoms...", tmpAtom.getSymbol(), atomTypeName, rAtomCount));
-                    addRAtoms(tmpAtom, rAtomCount, tmpFunctionalGroup);
+                    String tmpAtomTypeName = tmpAtom.getAtomTypeName();
+                    if (ErtlFunctionalGroupsFinder.isDbg()) {
+                        ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                "   - found single aromatic heteroatom (%s, Atomtype %s). Adding %d R-Atoms...",
+                                tmpAtom.getSymbol(),
+                                tmpAtomTypeName,
+                                tmpRAtomCount));
+                    }
+                    this.addRAtoms(tmpAtom, tmpRAtomCount, tmpFunctionalGroup);
                     continue;
                 }
-            }
-
+            } // end of pre-check for special one-atom FG cases
             // get atoms to process
-            List<IAtom> fGroupAtoms = new ArrayList<IAtom>(tmpFunctionalGroup.getAtomCount());//Lists.newArrayList(fGroup.atoms());
-            tmpFunctionalGroup.atoms().forEach(fGroupAtoms::add);
-
-            // process atoms...
-            for(IAtom atom : fGroupAtoms) {
-                List<EnvironmentalC> environment = markedAtomToConnectedEnvCMap.get(atom);
-
-                if(environment == null) {
-                    if(atom.getImplicitHydrogenCount() != 0) {
-                        atom.setImplicitHydrogenCount(0);
+            List<IAtom> tmpFunctionalGroupAtoms = new ArrayList<>(tmpFunctionalGroup.getAtomCount());
+            tmpFunctionalGroup.atoms().forEach(tmpFunctionalGroupAtoms::add);
+            // process individual functional group atoms...
+            for (IAtom tmpFunctionalGroupAtom : tmpFunctionalGroupAtoms) {
+                List<EnvironmentalC> tmpFGenvCs = this.markedAtomToConnectedEnvCMap.get(tmpFunctionalGroupAtom);
+                if (tmpFGenvCs == null) {
+                    if (tmpFunctionalGroupAtom.getImplicitHydrogenCount() != 0) {
+                        tmpFunctionalGroupAtom.setImplicitHydrogenCount(0);
                     }
-                    int rAtomCount = atom.getValency() - 1;
-                    if(isDbg()) LOGGING_TOOL.debug(String.format("   - found connected aromatic heteroatom (%s). Adding %d R-Atoms...", atom.getSymbol(), rAtomCount));
-                    addRAtoms(atom, rAtomCount, tmpFunctionalGroup);
+                    int tmpRAtomCount = tmpFunctionalGroupAtom.getValency() - 1;
+                    if (ErtlFunctionalGroupsFinder.isDbg()) {
+                        ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                "   - found connected aromatic heteroatom (%s). Adding %d R-Atoms...",
+                                tmpFunctionalGroupAtom.getSymbol(),
+                                tmpRAtomCount));
+                    }
+                    this.addRAtoms(tmpFunctionalGroupAtom, tmpRAtomCount, tmpFunctionalGroup);
                 }
-
                 // processing carbons...
-                if(atom.getAtomicNumber() == 6) {
-                    if(atom.getProperty(CARBONYL_C_MARKER) == null) {
-                        if(atom.getImplicitHydrogenCount() != 0) {
-                            atom.setImplicitHydrogenCount(0);
+                if (tmpFunctionalGroupAtom.getAtomicNumber() == 6) {
+                    if (Objects.isNull(tmpFunctionalGroupAtom.getProperty(ErtlFunctionalGroupsFinder.CARBONYL_C_MARKER))) {
+                        if (tmpFunctionalGroupAtom.getImplicitHydrogenCount() != 0) {
+                            tmpFunctionalGroupAtom.setImplicitHydrogenCount(0);
                         }
-                        if(isDbg()) LOGGING_TOOL.debug("   - ignoring environment for marked carbon atom");
+                        if (ErtlFunctionalGroupsFinder.isDbg()) {
+                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("   - ignoring environment for marked carbon atom");
+                        }
+                        continue;
+                    } else {
+                        if (ErtlFunctionalGroupsFinder.isDbg()) {
+                            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("   - found carbonyl-carbon. Expanding environment...");
+                        }
+                        this.expandEnvironmentGeneralized(tmpFunctionalGroupAtom, tmpFunctionalGroup);
                         continue;
                     }
-                    else {
-                        if(isDbg()) LOGGING_TOOL.debug("   - found carbonyl-carbon. Expanding environment...");
-                        expandEnvironmentGeneralized(atom, tmpFunctionalGroup);
-                        continue;
+                } else { // processing heteroatoms...
+                    if (ErtlFunctionalGroupsFinder.isDbg()) {
+                        LOGGING_TOOL.debug(String.format("   - found heteroatom (%s). Expanding environment...",
+                                tmpFunctionalGroupAtom.getSymbol()));
                     }
-                }
-                // processing heteroatoms...
-                else {
-                    if(isDbg()) LOGGING_TOOL.debug(String.format("   - found heteroatom (%s). Expanding environment...", atom.getSymbol()));
-                    expandEnvironmentGeneralized(atom, tmpFunctionalGroup);
+                    this.expandEnvironmentGeneralized(tmpFunctionalGroupAtom, tmpFunctionalGroup);
                     continue;
                 }
             }
@@ -793,33 +805,46 @@ public class ErtlFunctionalGroupsFinder {
     /**
      * Expands the full environments of functional groups, converted into atoms and bonds.
      *
-     * @param fGroups the list of functional groups including "environments"
+     * @param aFunctionalGroupsList the list of functional groups including their "environments"
      */
-    private void expandFullEnvironments(List<IAtomContainer> fGroups) {
-        if(isDbg()) LOGGING_TOOL.debug("########## Starting expansion of full environments for functional groups... ##########");
-
-        for(IAtomContainer fGroup : fGroups) {
-            int atomCount = fGroup.getAtomCount();
-            if(isDbg()) LOGGING_TOOL.debug(String.format("Expanding environment on functional group (%d atoms)...", atomCount));
-
-            for(int i = 0; i < atomCount; i++) {
-                IAtom atom = fGroup.getAtom(i);
-
-                if(isDbg()) LOGGING_TOOL.debug(String.format(" - Atom #%d   - Expanding environment...", i));
-                expandEnvironment(atom, fGroup);
-
-                int hCount = atom.getImplicitHydrogenCount();
-                if(hCount != 0) {
-                    if(isDbg()) LOGGING_TOOL.debug(String.format("   - adding %d hydrogens...", hCount));
-                    addHydrogens(atom, hCount, fGroup);
-                    atom.setImplicitHydrogenCount(0);
+    private void expandFullEnvironments(List<IAtomContainer> aFunctionalGroupsList) {
+        if (ErtlFunctionalGroupsFinder.isDbg()) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("########## Starting expansion of full environments for functional groups... ##########");
+        }
+        for (IAtomContainer tmpFunctionalGroup : aFunctionalGroupsList) {
+            int tmpAtomCount = tmpFunctionalGroup.getAtomCount();
+            if (ErtlFunctionalGroupsFinder.isDbg()) {
+                ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                        "Expanding environment on functional group (%d atoms)...", tmpAtomCount));
+            }
+            for (int i = 0; i < tmpAtomCount; i++) {
+                IAtom tmpFunctionalGroupAtom = tmpFunctionalGroup.getAtom(i);
+                if (ErtlFunctionalGroupsFinder.isDbg()) {
+                    ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                            " - Atom #%d   - Expanding environment...", i));
+                }
+                this.expandEnvironment(tmpFunctionalGroupAtom, tmpFunctionalGroup);
+                int tmpImplicitHydrogenCount = tmpFunctionalGroupAtom.getImplicitHydrogenCount();
+                if (tmpImplicitHydrogenCount != 0) {
+                    if (ErtlFunctionalGroupsFinder.isDbg()) {
+                        ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug(String.format(
+                                "   - adding %d hydrogens...", tmpImplicitHydrogenCount));
+                    }
+                    this.addHydrogens(tmpFunctionalGroupAtom, tmpImplicitHydrogenCount, tmpFunctionalGroup);
+                    tmpFunctionalGroupAtom.setImplicitHydrogenCount(0);
                 }
             }
         }
-
-        if(isDbg()) LOGGING_TOOL.debug("########## Expansion of full environments for functional groups completed. ##########");
+        if (ErtlFunctionalGroupsFinder.isDbg()) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.debug("########## Expansion of full environments for functional groups completed. ##########");
+        }
     }
-
+    //
+    /**
+     * TODO
+     * @param atom
+     * @param container
+     */
     private void expandEnvironment(IAtom atom, IAtomContainer container) {
         List<EnvironmentalC> environment = markedAtomToConnectedEnvCMap.get(atom);
 
@@ -957,7 +982,14 @@ public class ErtlFunctionalGroupsFinder {
 
         return groups;
     }
+    //
 
+    /**
+     *
+     * Use ErtlFunctionalGroupsFinder.LOGGING_TOOL.setLevel(ILoggingTool.DEBUG); to activate debug messages.
+     *
+     * @return
+     */
     private static boolean isDbg() {
         return ErtlFunctionalGroupsFinder.LOGGING_TOOL.isDebugEnabled();
     }
