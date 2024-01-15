@@ -41,7 +41,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -49,7 +48,7 @@ import java.util.logging.Logger;
 
 /**
  * This class gives utility methods for using <a href="https://github.com/zielesny/ErtlFunctionalGroupsFinder">ErtlFunctionalGroupsFinder</a>,
- * a CDK-based implementation, published <a href="https://doi.org/10.1186/s13321-019-0361-8">here</a>, of the
+ * a CDK-based implementation, published <a href="https://doi.org/10.1186/s13321-019-0361-8">here</a> of the
  * <a href="https://doi.org/10.1186/s13321-017-0225-z">Ertl algorithm for automated functional groups detection</a>.
  * The methods of this class are basically public static re-implementations of the routines used for testing and
  * evaluating the ErtlFunctionalGroupsFinder, as described in the publication.
@@ -88,31 +87,9 @@ public class ErtlFunctionalGroupsFinderUtility {
     //
     //<editor-fold desc="Private static final class constants">
     /**
-     * Atomic numbers that ErtlFunctionalGroupsFinder accepts, see getValidAtomicNumbers()
-     */
-    private static final int[] VALID_ATOMIC_NUMBERS = new int[] {1,2,6,7,8,9,10,15,16,17,18,34,35,36,53,54,86};
-
-    /**
-     * Atomic numbers that ErtlFunctionalGroupsFinder accepts, loaded into a hash set for quick determination; set is
-     * filled in static initializer (see below)
-     */
-    private static final HashSet<Integer> VALID_ATOMIC_NUMBERS_SET = new HashSet<>(20, 1);
-
-    /**
      * Logger of this class
      */
     private static final Logger LOGGER = Logger.getLogger(ErtlFunctionalGroupsFinderUtility.class.getName());
-    //</editor-fold>
-    //
-    //<editor-fold desc="Static initializer">
-    /**
-     * Static initializer that sets up hash maps/sets used by static methods.
-     */
-    static {
-        for (int i : ErtlFunctionalGroupsFinderUtility.VALID_ATOMIC_NUMBERS) {
-            ErtlFunctionalGroupsFinderUtility.VALID_ATOMIC_NUMBERS_SET.add(i);
-        }
-    }
     //</editor-fold>
     //
     private ErtlFunctionalGroupsFinderUtility() {
@@ -146,21 +123,6 @@ public class ErtlFunctionalGroupsFinderUtility {
     //
     //<editor-fold desc="Queries for filtering">
     /**
-     * Checks whether the given molecule consists of two or more unconnected structures, e.g. ion and counter-ion. This
-     * would make it unfit to be passed to ErtlFunctionalGroupsFinder.find(). This can be fixed by preprocessing, see
-     * selectBiggestUnconnectedComponent() below.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule consists of two or more unconnected structures
-     * @throws NullPointerException if the given molecule is 'null'
-     */
-    public static boolean isStructureUnconnected(IAtomContainer aMolecule) throws NullPointerException {
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'");
-        boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
-        return (!tmpIsConnected);
-    }
-
-    /**
      * Checks whether the atom count or bond count of the given molecule is zero. The ErtlFunctionalGroupsFinder.find()
      * method would still accept these molecules, but it is not recommended to pass them on (simply makes not much sense).
      *
@@ -176,96 +138,6 @@ public class ErtlFunctionalGroupsFinderUtility {
     }
 
     /**
-     * Iterates through all atoms in the given molecule and checks whether they are charged. If this method returns
-     * 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find() but should be filtered or the
-     * charges neutralized (see neutralizeCharges() below).
-     * <br>If no charged atoms are found, this method scales linearly with O(n) with n: number of atoms in the given
-     * molecule.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule contains one or more charged atoms
-     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
-     */
-    public static boolean isMoleculeCharged(IAtomContainer aMolecule) throws NullPointerException {
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
-        int tmpAtomCount = aMolecule.getAtomCount();
-        if (tmpAtomCount == 0) {
-            return false;
-        }
-        Iterable<IAtom> tmpAtoms = aMolecule.atoms();
-        boolean tmpIsAtomCharged;
-        for (IAtom tmpAtom : tmpAtoms) {
-            //Throws NullPointerException if tmpAtom is 'null'
-            tmpIsAtomCharged = ErtlFunctionalGroupsFinderUtility.isAtomCharged(tmpAtom);
-            if (tmpIsAtomCharged) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks whether a given atom is charged.
-     *
-     * @param anAtom the atom to check
-     * @return true, if the atom is charged
-     * @throws NullPointerException if the given atom or its formal charge is 'null'
-     */
-    public static boolean isAtomCharged(IAtom anAtom) throws NullPointerException {
-        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
-        Integer tmpFormalCharge = anAtom.getFormalCharge();
-        Objects.requireNonNull(tmpFormalCharge, "Formal charge is 'null'.");
-        return (tmpFormalCharge.intValue() != 0);
-    }
-
-    /**
-     * Checks whether a given atom is a metal, metalloid or pseudo atom judging by its atomic number. Atoms with invalid
-     * atomic numbers (metal, metalloid or pseudo ('R') atoms) cannot be passed on to ErtlFunctionalGroupsFinder.find()
-     * but should be filtered.
-     *
-     * @param anAtom the atom to check
-     * @return true, if the atomic number is invalid or 'null'
-     * @throws NullPointerException if the given atom or its atomic number is 'null'
-     */
-    public static boolean isAtomicNumberInvalid(IAtom anAtom) throws NullPointerException {
-        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
-        Integer tmpAtomicNumber = anAtom.getAtomicNumber();
-        Objects.requireNonNull(tmpAtomicNumber, "Atomic number is 'null'.");
-        int tmpAtomicNumberInt = tmpAtomicNumber.intValue();
-        boolean tmpIsAtomicNumberValid = ErtlFunctionalGroupsFinderUtility.VALID_ATOMIC_NUMBERS_SET.contains(tmpAtomicNumberInt);
-        return !tmpIsAtomicNumberValid;
-    }
-
-    /**
-     * Iterates through all atoms in the given molecule and checks whether their atomic numbers are invalid. If this
-     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find() but should be
-     * filtered.
-     * <br>If no invalid atoms are found, this method scales linearly with O(n) with n: number of atoms in the given
-     * molecule.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule contains one or more atoms with invalid atomic numbers
-     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
-     */
-    public static boolean containsInvalidAtomicNumbers(IAtomContainer aMolecule) throws NullPointerException {
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
-        int tmpAtomCount = aMolecule.getAtomCount();
-        if (tmpAtomCount == 0) {
-            return false;
-        }
-        Iterable<IAtom> tmpAtoms = aMolecule.atoms();
-        boolean tmpIsAtomicNumberInvalid;
-        for (IAtom tmpAtom : tmpAtoms) {
-            //Throws NullPointerException if tmpAtom is 'null'
-            tmpIsAtomicNumberInvalid = ErtlFunctionalGroupsFinderUtility.isAtomicNumberInvalid(tmpAtom);
-            if (tmpIsAtomicNumberInvalid) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Checks whether the given molecule represented by an atom container should NOT be passed on to the
      * ErtlFunctionalGroupsFinder.find() method but instead be filtered.
      * <br>In detail, this function returns true if the given atom container contains metal, metalloid, or pseudo atoms
@@ -273,9 +145,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * <br>If this method returns false, this does NOT mean the molecule can be passed on to find() without a problem. It
      * still might need to be preprocessed first.
      *
-     * @see ErtlFunctionalGroupsFinderUtility#isValidArgumentForFindMethod(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#applyFiltersAndPreprocessing(IAtomContainer, Aromaticity)
      * @param aMolecule the atom container to check
      * @return true if the given atom container should be discarded
      * @throws NullPointerException if parameter is 'null'
@@ -293,9 +162,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * <br>If this method returns false, this does NOT mean the molecule can be passed on to find() without a problem. It
      * still might need to be preprocessed first.
      *
-     * @see ErtlFunctionalGroupsFinderUtility#isValidArgumentForFindMethod(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#applyFiltersAndPreprocessing(IAtomContainer, Aromaticity)
      * @param aMolecule the atom container to check
      * @param areSingleAtomsFiltered if false, molecules with bond count 0 but atom count 1 will return false (do not filter)
      * @return true if the given atom container should be discarded
@@ -306,10 +172,10 @@ public class ErtlFunctionalGroupsFinderUtility {
         boolean tmpShouldBeFiltered;
         try {
             if (areSingleAtomsFiltered) {
-                tmpShouldBeFiltered = (ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(aMolecule)
+                tmpShouldBeFiltered = (ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
                         || ErtlFunctionalGroupsFinderUtility.isAtomOrBondCountZero(aMolecule));
             } else {
-                tmpShouldBeFiltered = (ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(aMolecule)
+                tmpShouldBeFiltered = (ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
                         || aMolecule.getAtomCount() == 0);
             }
 
@@ -328,11 +194,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * <br>It is advised to check via shouldBeFiltered() whether the given molecule should be discarded anyway before
      * calling this function.
      *
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBeFiltered(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#isValidArgumentForFindMethod(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#applyFiltersAndPreprocessing(IAtomContainer, Aromaticity)
-     * @see ErtlFunctionalGroupsFinderUtility#neutralizeCharges(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#selectBiggestUnconnectedComponent(IAtomContainer)
      * @param aMolecule the atom container to check
      * @return true is the given molecule needs to be preprocessed
      * @throws NullPointerException if parameter is 'null'
@@ -341,8 +202,8 @@ public class ErtlFunctionalGroupsFinderUtility {
         Objects.requireNonNull(aMolecule, "Given molecule is null.");
         boolean tmpNeedsPreprocessing;
         try {
-            tmpNeedsPreprocessing = (ErtlFunctionalGroupsFinderUtility.isMoleculeCharged(aMolecule)
-                    || ErtlFunctionalGroupsFinderUtility.isStructureUnconnected(aMolecule));
+            tmpNeedsPreprocessing = (ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
+                    || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
         } catch (Exception anException) {
             ErtlFunctionalGroupsFinderUtility.LOGGER.log(Level.WARNING,
                     anException.toString() + " Molecule ID: " + ErtlFunctionalGroupsFinderUtility.getIDForLogging(aMolecule),
@@ -358,10 +219,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms, contains
      * multiple unconnected parts, or has an atom or bond count of zero.
      *
-     * @see ErtlFunctionalGroupsFinder#find(IAtomContainer, boolean)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBeFiltered(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#applyFiltersAndPreprocessing(IAtomContainer, Aromaticity)
      * @param aMolecule the molecule to check
      * @return true if the given molecule is a valid parameter for ErtlFunctionalGroupsFinder.find() method
      * @throws NullPointerException if parameter is 'null'
@@ -377,10 +234,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * multiple unconnected parts, or has an atom or bond count of zero. If the second parameter is set to "false", single atom molecules
      * (bond count is 0) are accepted and not recommended to be filtered if they fulfill the other requirements.
      *
-     * @see ErtlFunctionalGroupsFinder#find(IAtomContainer, boolean)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBeFiltered(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#applyFiltersAndPreprocessing(IAtomContainer, Aromaticity)
      * @param aMolecule the molecule to check
      * @param areSingleAtomsFiltered if false, molecules with bond count 0 but atom count 1 will return true (do not filter)
      * @return true if the given molecule is a valid parameter for ErtlFunctionalGroupsFinder.find() method
@@ -391,15 +244,15 @@ public class ErtlFunctionalGroupsFinderUtility {
         boolean tmpIsValid;
         try {
             if (areSingleAtomsFiltered) {
-                tmpIsValid = !(ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(aMolecule)
+                tmpIsValid = !(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
                         || ErtlFunctionalGroupsFinderUtility.isAtomOrBondCountZero(aMolecule)
-                        || ErtlFunctionalGroupsFinderUtility.isMoleculeCharged(aMolecule)
-                        || ErtlFunctionalGroupsFinderUtility.isStructureUnconnected(aMolecule));
+                        || ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
+                        || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
             } else {
-                tmpIsValid = !(ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(aMolecule)
+                tmpIsValid = !(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
                         || aMolecule.getAtomCount() == 0
-                        || ErtlFunctionalGroupsFinderUtility.isMoleculeCharged(aMolecule)
-                        || ErtlFunctionalGroupsFinderUtility.isStructureUnconnected(aMolecule));
+                        || ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
+                        || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
             }
         } catch (Exception anException) {
             ErtlFunctionalGroupsFinderUtility.LOGGER.log(Level.SEVERE,
@@ -477,7 +330,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * @throws NullPointerException if anAtom or aParentMolecule is 'null'
      * @throws CDKException if the atom is not part of the molecule or no matching atom type can be determined for the
      * atom or there is a problem with adding the implicit hydrogen atoms.
-     * @see ErtlFunctionalGroupsFinderUtility#neutralizeCharges(IAtomContainer)
      */
     public static void neutralizeCharges(IAtom anAtom, IAtomContainer aParentMolecule) throws NullPointerException, CDKException {
         Objects.requireNonNull(anAtom, "Given atom is 'null'.");
@@ -586,9 +438,6 @@ public class ErtlFunctionalGroupsFinderUtility {
      * clone() method.
      * <br>NOTE2: The returned IAtomContainer object is the same as the one given as parameter!
      *
-     * @see ErtlFunctionalGroupsFinder#find(IAtomContainer, boolean)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBeFiltered(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
      * @param aMolecule the molecule to check and process
      * @param anAromaticityModel the aromaticity model to apply to the molecule in preprocessing; Note: The chosen
      * ElectronDonation model can massively influence the extracted function groups of a molecule when using
@@ -614,12 +463,9 @@ public class ErtlFunctionalGroupsFinderUtility {
      * clone() method.
      * <br>NOTE2: The returned IAtomContainer object is the same as the one given as parameter!
      *
-     * @see ErtlFunctionalGroupsFinder#find(IAtomContainer, boolean)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBeFiltered(IAtomContainer)
-     * @see ErtlFunctionalGroupsFinderUtility#shouldBePreprocessed(IAtomContainer)
      * @param aMolecule the molecule to check and process
      * @param anAromaticityModel the aromaticity model to apply to the molecule in preprocessing; Note: The chosen
-     * ElectronDonation model can massively influence the extracted function groups of a molecule when using
+     * ElectronDonation model can massively influence the extracted functional groups of a molecule when using
      * ErtlFunctionGroupsFinder!
      * @param areSingleAtomsFiltered if false, molecules with bond count 0 but atom count 1 will be processed and
      *                               not return null
@@ -645,17 +491,17 @@ public class ErtlFunctionalGroupsFinderUtility {
                 }
             }
             //From structures containing two or more unconnected structures (e.g. ions) choose the largest structure
-            boolean tmpIsUnconnected = ErtlFunctionalGroupsFinderUtility.isStructureUnconnected(aMolecule);
+            boolean tmpIsUnconnected = ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule);
             if (tmpIsUnconnected) {
                 aMolecule = ErtlFunctionalGroupsFinderUtility.selectBiggestUnconnectedComponent(aMolecule);
             }
             //Filter
-            boolean tmpContainsInvalidAtoms = ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(aMolecule);
+            boolean tmpContainsInvalidAtoms = ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule);
             if (tmpContainsInvalidAtoms) {
                 return null;
             }
             //Neutralize charges if there are any
-            boolean tmpIsCharged = ErtlFunctionalGroupsFinderUtility.isMoleculeCharged(aMolecule);
+            boolean tmpIsCharged = ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule);
             if (tmpIsCharged) {
                 ErtlFunctionalGroupsFinderUtility.neutralizeCharges(aMolecule);
             }

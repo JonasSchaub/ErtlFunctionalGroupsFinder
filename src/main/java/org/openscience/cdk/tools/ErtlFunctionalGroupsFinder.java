@@ -20,7 +20,9 @@
 
 package org.openscience.cdk.tools;
 
+import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.graph.ConnectedComponents;
+import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.graph.GraphUtil.EdgeToBondMap;
 import org.openscience.cdk.interfaces.IAtom;
@@ -30,6 +32,7 @@ import org.openscience.cdk.interfaces.IBond.Order;
 import org.openscience.cdk.interfaces.ILonePair;
 import org.openscience.cdk.interfaces.IPseudoAtom;
 import org.openscience.cdk.interfaces.ISingleElectron;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -95,7 +98,6 @@ public class ErtlFunctionalGroupsFinder {
      * or aliphatic and also contains a clone of its connecting bond.
      */
     private class EnvironmentalC {
-
         /**
          * Indicates whether carbon atom is aromatic or aliphatic.
          */
@@ -183,8 +185,10 @@ public class ErtlFunctionalGroupsFinder {
     public static final String CARBONYL_C_MARKER = "EFGF-Carbonyl-C";
     //
     /**
-     * Set of atomic numbers that are accepted in the input molecule if the strict input restrictions are activated
-     * (excludes metal and metalloid elements, only organic elements included).
+     * Set of atomic numbers of nonmetal elements, namely hydrogen, carbon, nitrogen, oxygen, phosphorus, sulfur, selenium,
+     * halogens (fluorine, chlorine, bromine, iodine), and noble gases (helium, neon, argon, krypton, xenon, radon).
+     * Atoms of these elements are exclusively accepted in the input molecule if(!) the strict input restrictions are
+     * activated (turned off by default).
      */
     public static final Set<Integer> NONMETAL_ATOMIC_NUMBERS = Set.of(1, 2, 6, 7, 8, 9, 10, 15, 16, 17, 18, 34, 35, 36, 53, 54, 86);
     //
@@ -294,18 +298,6 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
-     * Returns the unmodifiable set containing all atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find()
-     * if input restrictions are enabled(!).
-     * All other atomic numbers are invalid because they represent metal, metalloid or pseudo ('R') atoms.
-     * <br>Analogous to using <code>ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS</code>.
-     *
-     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find() if input restrictions are activated
-     */
-    public static Set<Integer> getValidAtomicNumbers() {
-        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS;
-    }
-    //
-    /**
      * Find all functional groups in a molecule. The input atom container instance is cloned before processing to leave
      * the input container intact.
      * <p>
@@ -341,7 +333,7 @@ public class ErtlFunctionalGroupsFinder {
     public List<IAtomContainer> find (IAtomContainer aMolecule, boolean aShouldInputBeCloned) throws CloneNotSupportedException {
         return this.find(aMolecule, aShouldInputBeCloned, false);
     }
-
+    //
     /**
      * Find all functional groups in a molecule.
      *
@@ -352,7 +344,8 @@ public class ErtlFunctionalGroupsFinder {
      *                             leave the input container intact
      * @param anAreInputRestrictionsApplied if true, the input must consist of one connected structure and may not
      *                                      contain charged atoms, metals or metalloids; an IllegalArgumentException will
-     *                                      be thrown otherwise
+     *                                      be thrown otherwise; see convenience methods in this class for detecting
+     *                                      illegal input structures for this case
      * @throws CloneNotSupportedException if cloning is not possible
      * @throws IllegalArgumentException if input restrictions are applied and the given molecule does not fulfill them
      * @return a list with all functional groups found in the molecule
@@ -394,7 +387,168 @@ public class ErtlFunctionalGroupsFinder {
         this.clearCache();
         return tmpFunctionalGroupsList;
     }
-
+    //
+    /**
+     * Returns the unmodifiable set containing the atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default). These nonmetal elements include
+     * hydrogen, carbon, nitrogen, oxygen, phosphorus, sulfur, selenium, halogens (fluorine, chlorine, bromine, iodine),
+     * and noble gases (helium, neon, argon, krypton, xenon, radon).
+     * All other atomic numbers represent metal, metalloid, or pseudo ('R') atoms.
+     * <br>Convenience method analogous to using <code>ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS</code> directly.
+     *
+     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find() if input restrictions are activated
+     */
+    public static Set<Integer> getNonmetalAtomicNumbers() {
+        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS;
+    }
+    //
+    /**
+     * Checks whether a given atom is a metal, metalloid, or pseudo atom judging by its atomic number. These atoms
+     * cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default).
+     *
+     * @param anAtom the atom to check
+     * @return true, if the atomic number is not in the nonmetal atomic numbers set or 'null'
+     * @throws NullPointerException if the given atom or its atomic number is 'null'
+     */
+    public static boolean isMetalMetalloidOrPseudoAtom(IAtom anAtom) throws NullPointerException {
+        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
+        Objects.requireNonNull(anAtom.getAtomicNumber(), "Atomic number is 'null'.");
+        return !ErtlFunctionalGroupsFinder.isNonmetal(anAtom);
+    }
+    //
+    /**
+     * Iterates through all atoms in the given molecule and checks them for metal, metalloid, and pseudo ("R") atoms. If this
+     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default).
+     * <br>This method scales linearly with O(n) with n: number of atoms in the given
+     * molecule.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule contains one or more metal, metalloid, or pseudo ("R") atoms
+     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
+     */
+    public static boolean containsMetalMetalloidOrPseudoAtom(IAtomContainer aMolecule) throws NullPointerException {
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
+        boolean tmpIsAtomicNumberInvalid;
+        for (IAtom tmpAtom : aMolecule.atoms()) {
+            // throws NullPointerException if tmpAtom or its atomic number is 'null'
+            tmpIsAtomicNumberInvalid = ErtlFunctionalGroupsFinder.isMetalMetalloidOrPseudoAtom(tmpAtom);
+            if (tmpIsAtomicNumberInvalid) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //
+    /**
+     * Checks whether a given atom is charged. These atoms cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default).
+     *
+     * @param anAtom the atom to check
+     * @return true, if the atom is charged
+     * @throws NullPointerException if the given atom or its formal charge is 'null'
+     */
+    public static boolean isCharged(IAtom anAtom) throws NullPointerException {
+        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
+        Integer tmpFormalCharge = anAtom.getFormalCharge();
+        Objects.requireNonNull(tmpFormalCharge, "Formal charge is 'null'.");
+        return (tmpFormalCharge.intValue() != 0);
+    }
+    //
+    /**
+     * Iterates through all atoms in the given molecule and checks whether they are charged. If this
+     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default).
+     * <br>This method scales linearly with O(n) with n: number of atoms in the given
+     * molecule.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule contains one or more charged atoms
+     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
+     */
+    public static boolean containsChargedAtom(IAtomContainer aMolecule) throws NullPointerException {
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
+        int tmpAtomCount = aMolecule.getAtomCount();
+        boolean tmpIsAtomCharged;
+        for (IAtom tmpAtom : aMolecule.atoms()) {
+            //Throws NullPointerException if tmpAtom is 'null'
+            tmpIsAtomCharged = ErtlFunctionalGroupsFinder.isCharged(tmpAtom);
+            if (tmpIsAtomCharged) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //
+    /**
+     * Checks whether the given molecule consists of two or more unconnected structures, e.g. ion and counter-ion. This
+     * would make it unfit to be passed to ErtlFunctionalGroupsFinder.find() if(!) the input restrictions are turned on (turned off by default).
+     * Note: this is a convenience method basically applying <code>ConnectivityChecker.isConnected(aMolecule);</code>.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule consists of two or more unconnected structures
+     * @throws NullPointerException if the given molecule is 'null'
+     */
+    public static boolean isStructureUnconnected(IAtomContainer aMolecule) throws NullPointerException {
+        //Developer's note: the private checkConstraints() method is not used here because it is intertwined with the
+        // find() method for speed-up; but it basically does the same.
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'");
+        boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
+        return (!tmpIsConnected);
+    }
+    //
+    /**
+     * Checks whether the given molecule represented by an atom container can be passed on to the
+     * ErtlFunctionalGroupsFinder.find() method without problems.
+     * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms or consists of
+     * multiple unconnected parts.
+     *
+     * @param aMolecule the molecule to check
+     * @return true if the given molecule is a valid parameter for ErtlFunctionalGroupsFinder.find() method if(!) the input restrictions are turned on (turned off by default)
+     * @throws NullPointerException if parameter is 'null'
+     * @throws IllegalArgumentException if the input molecule causes any other type of exception while processing
+     */
+    public static boolean isValidInputMoleculeWithRestrictionsTurnedOn(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException {
+        Objects.requireNonNull(aMolecule, "Given molecule is null.");
+        boolean tmpIsValid;
+        try {
+            tmpIsValid = !(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
+                    || ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
+                    || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
+        } catch (Exception anException) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn(anException);
+            throw new IllegalArgumentException(anException);
+        }
+        return tmpIsValid;
+    }
+    //
+    /**
+     * Applies the necessary preprocessing for functional group detection. Atom types are set and aromaticity detected
+     * in the input molecule.
+     * <br>NOTE: This changes properties and flags in the given atom container instance. If you
+     * want to retain your object unchanged for future calculations, use the IAtomContainer's
+     * clone() method.
+     *
+     * @param aMolecule the molecule to process
+     * @param anAromaticityModel the aromaticity model to apply to the molecule in preprocessing; Note: The chosen
+     *                           ElectronDonation model can massively influence the extracted functional groups of a molecule
+     *                           when using ErtlFunctionGroupsFinder!
+     * @throws NullPointerException if any parameter is null
+     * @throws IllegalArgumentException if the input molecule causes any other type of exception while processing
+     */
+    public static void applyPreprocessing(IAtomContainer aMolecule, Aromaticity anAromaticityModel) throws NullPointerException, IllegalArgumentException {
+        Objects.requireNonNull(aMolecule, "Given atom container is 'null'.");
+        Objects.requireNonNull(anAromaticityModel, "Given aromaticity model is 'null'.");
+        try {
+            AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(aMolecule);
+            anAromaticityModel.apply(aMolecule);
+        } catch (Exception anException) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn(anException);
+            throw new IllegalArgumentException(anException);
+        }
+    }
+    //
     /**
      * Clear caches related to the input molecule. Note, these are not proper caches, there are no results cached. Here,
      * only data taken from the input molecule is saved for only one execution of the find() method, to facilitate
@@ -407,7 +561,7 @@ public class ErtlFunctionalGroupsFinder {
         this.aromaticHeteroAtomIndicesToIsInGroupBoolMapCache = null;
         this.markedAtomToConnectedEnvCMapCache = null;
     }
-
+    //
     /**
      * Mark all atoms and store them in a set for further processing.
      *
@@ -987,13 +1141,16 @@ public class ErtlFunctionalGroupsFinder {
     //
     /**
      * Checks whether the given atom is from an element in the organic subset, i.e. not a metal or metalloid atom.
-     * See the public constant set of non-metal atomic numbers declared in this class.
+     * See the public constant set of non-metal atomic numbers declared in this class. Given as static here because it is
+     * used by static public utility methods
      *
      * @param anAtom atom to check
      * @return true if the given atom is organic and not a metal or metalloid atom
      */
-    private boolean isNonmetal(IAtom anAtom) {
-        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS.contains(anAtom.getAtomicNumber());
+    private static boolean isNonmetal(IAtom anAtom) {
+        Integer tmpAtomicNumber = anAtom.getAtomicNumber();
+        int tmpAtomicNumberInt = tmpAtomicNumber.intValue();
+        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS.contains(tmpAtomicNumberInt);
     }
     //
     /**
@@ -1094,14 +1251,16 @@ public class ErtlFunctionalGroupsFinder {
      */
     private void checkConstraints(IAtomContainer aMolecule) throws IllegalArgumentException {
         for (IAtom tmpAtom : aMolecule.atoms()) {
-            if (!Objects.isNull(tmpAtom.getFormalCharge()) && tmpAtom.getFormalCharge() != 0) {
+            if (ErtlFunctionalGroupsFinder.isCharged(tmpAtom)) {
                 throw new IllegalArgumentException("Input molecule must not contain any charges.");
             }
-            if (!this.isNonmetal(tmpAtom)) {
-                throw new IllegalArgumentException("Input molecule must not contain metal or metalloid atoms.");
+            if (!ErtlFunctionalGroupsFinder.isNonmetal(tmpAtom)) {
+                throw new IllegalArgumentException("Input molecule must not contain metal, metalloid, or pseudo atoms.");
             }
         }
         Objects.requireNonNull(this.adjListCache, "Adjacency list cache must already be set-up for this check!");
+        //Developer's note: this method does not use the public isStructureUnconnected() method because it is intertwined with the
+        // find() method for speed-up; but it basically does the same.
         ConnectedComponents tmpConnectedComponents = new ConnectedComponents(this.adjListCache);
         if (tmpConnectedComponents.nComponents() != 1) {
             throw new IllegalArgumentException("Input molecule must consist of only a single connected structure.");

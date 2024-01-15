@@ -221,10 +221,10 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
         SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         //CHEMBL1201736
         IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles("CO/N=C(\\C(=O)N[C@@H]1C(=O)N2C(C(=O)[O-])=C(C[N+]3(C)CCCC3)CS[C@H]12)c1csc(N)n1.Cl");
-        Assertions.assertTrue(ErtlFunctionalGroupsFinderUtility.isStructureUnconnected(tmpMolecule));
-        Assertions.assertTrue(ErtlFunctionalGroupsFinderUtility.isMoleculeCharged(tmpMolecule));
+        Assertions.assertTrue(ErtlFunctionalGroupsFinder.isStructureUnconnected(tmpMolecule));
+        Assertions.assertTrue(ErtlFunctionalGroupsFinder.containsChargedAtom(tmpMolecule));
         Assertions.assertFalse(ErtlFunctionalGroupsFinderUtility.isAtomOrBondCountZero(tmpMolecule));
-        Assertions.assertFalse(ErtlFunctionalGroupsFinderUtility.containsInvalidAtomicNumbers(tmpMolecule));
+        Assertions.assertFalse(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(tmpMolecule));
         Assertions.assertFalse(ErtlFunctionalGroupsFinderUtility.shouldBeFiltered(tmpMolecule));
         Assertions.assertTrue(ErtlFunctionalGroupsFinderUtility.shouldBePreprocessed(tmpMolecule));
         Assertions.assertFalse(ErtlFunctionalGroupsFinderUtility.isValidArgumentForFindMethod(tmpMolecule));
