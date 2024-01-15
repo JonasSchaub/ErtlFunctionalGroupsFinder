@@ -31,7 +31,6 @@ import org.openscience.cdk.interfaces.ILonePair;
 import org.openscience.cdk.interfaces.IPseudoAtom;
 import org.openscience.cdk.interfaces.ISingleElectron;
 
-import javax.security.auth.kerberos.KerberosTicket;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+
 
 /**
  * Finds and extracts a molecule's functional groups in a purely rule-based manner.
@@ -975,61 +975,57 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
+     * Partitions the marked atoms and their processed environments into separate functional groups and builds atom containers
+     * for them as final step before returning them. Transfers the respective atoms, bonds, single electrons, and lone
+     * pairs from the source atom container to the new functional group atom containers.
      *
-     *
-     * @param sourceContainer
-     * @param atomIdxToFGMap
-     * @param fGroupCount
-     * @return
+     * @param aSourceContainer molecule atom container to take atoms, bonds, and electron objects from
+     * @param anAtomIdxToFGIdxMap array that maps atom indices (array positions) to functional group indices that the atoms belong to
+     * @param aFunctionalGroupCount maximum functional group index (+1) to know how many functional group atom containers to build
+     * @return list of partitioned functional group atom containers
      */
-    private List<IAtomContainer> partitionIntoGroups(IAtomContainer sourceContainer, int[] atomIdxToFGMap, int fGroupCount) {
-        List<IAtomContainer> groups = new ArrayList<>(fGroupCount);
-        for(int i = 0; i < fGroupCount; i++) {
-            groups.add(sourceContainer.getBuilder().newInstance(IAtomContainer.class));
+    private List<IAtomContainer> partitionIntoGroups(IAtomContainer aSourceContainer, int[] anAtomIdxToFGIdxMap, int aFunctionalGroupCount) {
+        List<IAtomContainer> tmpFunctionalGroups = new ArrayList<>(aFunctionalGroupCount);
+        for (int i = 0; i < aFunctionalGroupCount; i++) {
+            tmpFunctionalGroups.add(aSourceContainer.getBuilder().newInstance(IAtomContainer.class));
         }
-
-        Map<IAtom, IAtomContainer> atomtoFGMap = new HashMap<IAtom, IAtomContainer>(sourceContainer.getAtomCount());//Maps.newHashMapWithExpectedSize(sourceContainer.getAtomCount());
-
+        Map<IAtom, IAtomContainer> tmpAtomtoFGMap = new HashMap<>((int) ((aSourceContainer.getAtomCount() / 0.75f) + 2), 0.75f);
         // atoms
-        for(int atomIdx = 0; atomIdx < sourceContainer.getAtomCount(); atomIdx++) {
-            int fGroupId = atomIdxToFGMap[atomIdx];
-
-            if(fGroupId == -1) {
+        for (int tmpAtomIdx = 0; tmpAtomIdx < aSourceContainer.getAtomCount(); tmpAtomIdx++) {
+            int tmpFGroupIdx = anAtomIdxToFGIdxMap[tmpAtomIdx];
+            if (tmpFGroupIdx == -1) {
                 continue;
             }
-
-            IAtom atom = sourceContainer.getAtom(atomIdx);
-            IAtomContainer myGroup = groups.get(fGroupId);
-            myGroup.addAtom(atom);
-            atomtoFGMap.put(atom, myGroup);
+            IAtom tmpAtom = aSourceContainer.getAtom(tmpAtomIdx);
+            IAtomContainer tmpPartitionedFunctionalGroup = tmpFunctionalGroups.get(tmpFGroupIdx);
+            tmpPartitionedFunctionalGroup.addAtom(tmpAtom);
+            tmpAtomtoFGMap.put(tmpAtom, tmpPartitionedFunctionalGroup);
         }
-
         // bonds
-        for(IBond bond : sourceContainer.bonds()) {
-            IAtomContainer beginGroup = atomtoFGMap.get(bond.getBegin());
-            IAtomContainer endGroup = atomtoFGMap.get(bond.getEnd());
-
-            if(beginGroup == null || endGroup == null || beginGroup != endGroup)
+        for (IBond tmpBond : aSourceContainer.bonds()) {
+            // check whether begin and end atom of the bond have been correctly assigned to the same FG
+            IAtomContainer tmpFGofBeginAtom = tmpAtomtoFGMap.get(tmpBond.getBegin());
+            IAtomContainer tmpFGofEndAtom = tmpAtomtoFGMap.get(tmpBond.getEnd());
+            if (Objects.isNull(tmpFGofBeginAtom) || Objects.isNull(tmpFGofEndAtom) || tmpFGofBeginAtom != tmpFGofEndAtom) {
                 continue;
-
-            beginGroup.addBond(bond);
+            }
+            tmpFGofBeginAtom.addBond(tmpBond);
         }
-
         // single electrons
-        for (ISingleElectron electron : sourceContainer.singleElectrons()) {
-            IAtomContainer group = atomtoFGMap.get(electron.getAtom());
-            if(group != null)
-                group.addSingleElectron(electron);
+        for (ISingleElectron tmpSingleElectron : aSourceContainer.singleElectrons()) {
+            IAtomContainer tmpFunctionalGroup = tmpAtomtoFGMap.get(tmpSingleElectron.getAtom());
+            if (!Objects.isNull(tmpFunctionalGroup)) {
+                tmpFunctionalGroup.addSingleElectron(tmpSingleElectron);
+            }
         }
-
         // lone pairs
-        for (ILonePair lonePair : sourceContainer.lonePairs()) {
-            IAtomContainer group = atomtoFGMap.get(lonePair.getAtom());
-            if(group != null)
-                group.addLonePair(lonePair);
+        for (ILonePair tmpLonePair : aSourceContainer.lonePairs()) {
+            IAtomContainer tmpFunctionalGroup = tmpAtomtoFGMap.get(tmpLonePair.getAtom());
+            if (!Objects.isNull(tmpFunctionalGroup)) {
+                tmpFunctionalGroup.addLonePair(tmpLonePair);
+            }
         }
-
-        return groups;
+        return tmpFunctionalGroups;
     }
     //
     /**
