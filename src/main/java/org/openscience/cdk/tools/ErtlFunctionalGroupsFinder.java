@@ -56,9 +56,8 @@ import java.util.Set;
  * @version 1.2.1
  */
 public class ErtlFunctionalGroupsFinder {
-
     /**
-     * Defines the mode for generalizing functional group environments (default) or keeping them whole.
+     * Defines the mode for generalizing functional group environments (default), keeping them whole, or only extracting marked atoms.
      */
     public static enum Mode {
         /**
@@ -68,7 +67,12 @@ public class ErtlFunctionalGroupsFinder {
         /**
          * Skips the generalization step. Functional groups will keep their full environment.
          */
-        NO_GENERALIZATION;
+        NO_GENERALIZATION,
+        /**
+         * Functional groups will only consist of atoms marked according to the conditions defined by Ertl, environments
+         * will be completely ignored.
+         */
+        ONLY_MARKED_ATOMS;
     }
     //
     /**
@@ -226,7 +230,8 @@ public class ErtlFunctionalGroupsFinder {
     //
     /**
      * Constructor for ErtlFunctionalGroupsFinder that allows setting the treatment of environments in the identified
-     * functional groups. Default: environments will be generalized; no generalization: environments will be kept as whole.
+     * functional groups. Default: environments will be generalized; no generalization: environments will be kept as whole;
+     * only marked atoms: no environmental atoms whatsoever will be attached to the extracted functional groups.
      *
      * @param anEnvMode mode for treating functional group environments (see {@link ErtlFunctionalGroupsFinder.Mode}).
      */
@@ -236,8 +241,41 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
+     * Constructs a new ErtlFunctionalGroupsFinder instance with generalization of returned functional groups turned ON.
+     *
+     * @return new ErtlFunctionalGroupsFinder instance that generalizes returned functional groups
+     */
+    public static ErtlFunctionalGroupsFinder newErtlFunctionalGroupsFinderGeneralizingMode() {
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        return tmpEFGF;
+    }
+    //
+    /**
+     * Constructs a new ErtlFunctionalGroupsFinder instance with generalization of returned functional groups turned OFF.
+     * The FG will have their full environments.
+     *
+     * @return new ErtlFunctionalGroupsFinder instance that does NOT generalize returned functional groups
+     */
+    public static ErtlFunctionalGroupsFinder newErtlFunctionalGroupsFinderFullEnvironmentMode() {
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+        return tmpEFGF;
+    }
+    //
+    /**
+     * Constructs a new ErtlFunctionalGroupsFinder instance that extracts only the marked atoms of the functional groups,
+     * no attached environmental atoms.
+     *
+     * @return new ErtlFunctionalGroupsFinder instance that extracts only marked atoms
+     */
+    public static ErtlFunctionalGroupsFinder newErtlFunctionalGroupsFinderOnlyMarkedAtomsMode() {
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
+        return tmpEFGF;
+    }
+    //
+    /**
      * Allows setting the treatment of functional group environments after extraction. Default: environments will be
-     * generalized; no generalization: environments will be kept as whole.
+     * generalized; no generalization: environments will be kept as whole; only marked atoms: no environmental atoms
+     * whatsoever will be attached to the extracted functional groups.
      *
      * @param anEnvMode mode for treating functional group environments (see {@link ErtlFunctionalGroupsFinder.Mode}).
      */
@@ -253,6 +291,18 @@ public class ErtlFunctionalGroupsFinder {
      */
     public Mode getEnvMode() {
         return this.envMode;
+    }
+    //
+    /**
+     * Returns the unmodifiable set containing all atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find()
+     * if input restrictions are enabled(!).
+     * All other atomic numbers are invalid because they represent metal, metalloid or pseudo ('R') atoms.
+     * <br>Analogous to using <code>ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS</code>.
+     *
+     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find() if input restrictions are activated
+     */
+    public static Set<Integer> getValidAtomicNumbers() {
+        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS;
     }
     //
     /**
@@ -336,7 +386,9 @@ public class ErtlFunctionalGroupsFinder {
             this.expandGeneralizedEnvironments(tmpFunctionalGroupsList);
         } else if (this.envMode == Mode.NO_GENERALIZATION) {
             this.expandFullEnvironments(tmpFunctionalGroupsList);
-        } else {
+        } else if (this.envMode == Mode.ONLY_MARKED_ATOMS) {
+            //do nothing
+        }else {
             throw new IllegalArgumentException("Unknown mode.");
         }
         this.clearCache();

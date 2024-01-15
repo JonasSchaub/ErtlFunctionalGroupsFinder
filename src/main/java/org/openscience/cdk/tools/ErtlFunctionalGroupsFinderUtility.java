@@ -35,15 +35,12 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.interfaces.IAtomType;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
-import org.openscience.cdk.interfaces.IPseudoAtom;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -125,17 +122,6 @@ public class ErtlFunctionalGroupsFinderUtility {
     //<editor-fold desc="Public static methods">
     //<editor-fold desc="Constants and new instances">
     /**
-     * Returns an integer array containing all atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find().
-     * All other atomic numbers are invalid because they represent metal, metalloid or pseudo ('R') atoms.
-     *
-     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find()
-     */
-    public static int[] getValidAtomicNumbers() {
-        return Arrays.copyOf(ErtlFunctionalGroupsFinderUtility.VALID_ATOMIC_NUMBERS,
-                ErtlFunctionalGroupsFinderUtility.VALID_ATOMIC_NUMBERS.length);
-    }
-
-    /**
      * Constructs a CDK MoleculeHashGenerator that is configured to count frequencies of the functional groups
      * returned by ErtlFunctionalGroupsFinder. It takes elements, bond order sum, and aromaticity of the atoms in
      * an atom container into consideration. It does not consider things like isotopes, stereo-chemistry,
@@ -155,27 +141,6 @@ public class ErtlFunctionalGroupsFinderUtility {
                 .encode(CustomAtomEncoder.AROMATICITY) //See enum CustomAtomEncoder below
                 .molecular();
         return tmpHashGenerator;
-    }
-
-    /**
-     * Constructs a new ErtlFunctionalGroupsFinder object with generalization of returned functional groups turned ON.
-     *
-     * @return new ErtlFunctionalGroupsFinder object that generalizes returned functional groups
-     */
-    public static ErtlFunctionalGroupsFinder getErtlFunctionalGroupsFinderGeneralizingMode() {
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        return tmpEFGF;
-    }
-
-    /**
-     * Constructs a new ErtlFunctionalGroupsFinder object with generalization of returned functional groups turned OFF.
-     * The FG will contain their full environments.
-     *
-     * @return new ErtlFunctionalGroupsFinder object that does NOT generalize returned functional groups
-     */
-    public static ErtlFunctionalGroupsFinder getErtlFunctionalGroupsFinderNotGeneralizingMode() {
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
-        return tmpEFGF;
     }
     //</editor-fold>
     //
@@ -197,7 +162,7 @@ public class ErtlFunctionalGroupsFinderUtility {
 
     /**
      * Checks whether the atom count or bond count of the given molecule is zero. The ErtlFunctionalGroupsFinder.find()
-     * method would still accept these molecules but it is not recommended to pass them on (simply makes not much sense).
+     * method would still accept these molecules, but it is not recommended to pass them on (simply makes not much sense).
      *
      * @param aMolecule the molecule to check
      * @return true, if the atom or bond count of the molecule is zero
@@ -707,84 +672,6 @@ public class ErtlFunctionalGroupsFinderUtility {
     //</editor-fold>
     //
     //<editor-fold desc="Additional functionalities">
-    /**
-     * Extracts functional groups from the given molecule, using the Ertl algorithm / ErtlFunctionalGroupsFinder, but
-     * only the marked atoms of every functional group are returned. They do not contain their environment (i.e. connected,
-     * unmarked carbon atoms) and are also not generalized.
-     *
-     * @param aMolecule the molecule to extracts functional groups from; it is not cloned in this method!
-     * @return List of IAtomContainer objects representing the detected functional groups
-     * @throws NullPointerException if the given atom container is null
-     * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
-     * @throws CloneNotSupportedException if cloning is not possible
-     * check methods for filtering and preprocessing in this case
-     */
-    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
-        return ErtlFunctionalGroupsFinderUtility.findMarkedAtoms(aMolecule, true);
-    }
-
-    /**
-     * Extracts functional groups from the given molecule, using the Ertl algorithm / ErtlFunctionalGroupsFinder, but
-     * only the marked atoms of every functional group are returned. They do not contain their environment (i.e. connected,
-     * unmarked carbon atoms) and are also not generalized.
-     *
-     * @param aMolecule the molecule to extracts functional groups from; it is not cloned in this method!
-     * @param areSingleAtomsFiltered if false, molecules with bond count 0 but atom count 1 will be processed and not raise
-     *                               an IllegalArgumentException
-     * @return List of IAtomContainer objects representing the detected functional groups
-     * @throws NullPointerException if the given atom container is null
-     * @throws IllegalArgumentException if the given atom container cannot be passed to ErtlFunctionalGroupsFinder;
-     * @throws CloneNotSupportedException if cloning is not possible
-     * check methods for filtering and preprocessing in this case
-     */
-    public static List<IAtomContainer> findMarkedAtoms(IAtomContainer aMolecule, boolean areSingleAtomsFiltered) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
-        Objects.requireNonNull(aMolecule, "Given molecule is null.");
-        if (aMolecule.isEmpty()) {
-            return new ArrayList<IAtomContainer>(0);
-        }
-        boolean tmpCanBeFragmented = ErtlFunctionalGroupsFinderUtility.isValidArgumentForFindMethod(aMolecule, areSingleAtomsFiltered);
-        if (!tmpCanBeFragmented) {
-            throw new IllegalArgumentException("Given molecule cannot be fragmented but needs to be filtered or preprocessed.");
-        }
-        HashMap<Integer, IAtom> tmpIdToAtomMap = new HashMap<>(aMolecule.getAtomCount() + 1, 1);
-        for (int i = 0; i < aMolecule.getAtomCount(); i++) {
-            IAtom tmpAtom = aMolecule.getAtom(i);
-            tmpAtom.setProperty("EFGFUtility.INDEX", i);
-            tmpIdToAtomMap.put(i, tmpAtom);
-        }
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        List<IAtomContainer> tmpFunctionalGroups = tmpEFGF.find(aMolecule, false);
-        if (tmpFunctionalGroups.isEmpty()) {
-            return tmpFunctionalGroups;
-        }
-        for (IAtomContainer tmpFunctionalGroup : tmpFunctionalGroups) {
-            for (int i = 0; i < tmpFunctionalGroup.getAtomCount(); i++) {
-                IAtom tmpAtom = tmpFunctionalGroup.getAtom(i);
-                if (Objects.isNull(tmpAtom.getProperty("EFGFUtility.INDEX"))) {
-                    if (tmpAtom instanceof IPseudoAtom && "R".equals(((IPseudoAtom)tmpAtom).getLabel())) {
-                        //atom is a pseudo atom added by the EFGF in generalization
-                        tmpFunctionalGroup.removeAtom(tmpAtom);
-                        i = i - 1;
-                        continue;
-                    } else if (tmpAtom.getSymbol().equals("C")){
-                        //atom is an environmental C added by the EFGF
-                        tmpFunctionalGroup.removeAtom(tmpAtom);
-                        i = i - 1;
-                        continue;
-                    } else if (tmpAtom.getSymbol().equals("H")) {
-                        //atom is an explicit H added by the EFGF
-                        tmpFunctionalGroup.removeAtom(tmpAtom);
-                        i = i - 1;
-                        continue;
-                    } else {
-                        //unknown atom
-                        throw new IllegalArgumentException("Something went wrong, identified unknown added atom.");
-                    }
-                }
-            }
-        }
-        return tmpFunctionalGroups;
-    }
 
     /**
      * Replaces the environmental carbon or pseudo-atoms (new IAtom objects) inserted by the EFGF in an identified

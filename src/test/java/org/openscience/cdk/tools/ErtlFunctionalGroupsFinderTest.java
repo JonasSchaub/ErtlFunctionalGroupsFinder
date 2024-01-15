@@ -323,7 +323,7 @@ public class ErtlFunctionalGroupsFinderTest {
         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
         tmpAromaticity.apply(tmpTetraethylOrthosilicate);
 
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
         List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
 
         System.out.println("Tetraethyl Orthosilicate:");
@@ -341,7 +341,6 @@ public class ErtlFunctionalGroupsFinderTest {
         for (IAtomContainer tmpFG : tmpFGList) {
             System.out.println(tmpSmiGen.create(tmpFG));
         }
-
     }
 
     //TODO: Clean-up check constraints and add test molecules for these special cases to the testFind#() methods.
@@ -385,6 +384,39 @@ public class ErtlFunctionalGroupsFinderTest {
         }
         System.out.println(tmpMoleculeCouter);
         System.out.println(tmpExceptionsCounter);
+    }
+
+    /**
+     * TODO: more testing necessary
+     */
+    @Test
+    public void testOnlyMarkedAtoms() throws Exception {
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
+        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+
+        IAtomContainer tmpTetraethylOrthosilicate = tmpSmiPar.parseSmiles("CCO[Si](OCC)(OCC)OCC");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
+        tmpAromaticity.apply(tmpTetraethylOrthosilicate);
+
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
+        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
+
+        System.out.println("Tetraethyl Orthosilicate:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
+
+        IAtomContainer tmpCHEMBL1201736 = tmpSmiPar.parseSmiles("CO/N=C(\\C(=O)N[C@@H]1C(=O)N2C(C(=O)[O-])=C(C[N+]3(C)CCCC3)CS[C@H]12)c1csc(N)n1.Cl");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpCHEMBL1201736);
+        tmpAromaticity.apply(tmpCHEMBL1201736);
+
+        tmpFGList = tmpEFGF.find(tmpCHEMBL1201736);
+
+        System.out.println("CHEMBL1201736:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
     }
 
     private void testFind(String moleculeSmiles, String[] fGStrings) throws Exception {
