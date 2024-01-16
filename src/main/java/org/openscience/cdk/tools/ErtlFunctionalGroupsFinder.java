@@ -81,7 +81,10 @@ import java.util.Set;
  * Also structures consisting of more than one unconnected component (e.g. ion and counter-ion) are not accepted if the
  * strict input restrictions are turned on. This can be done via a boolean parameter in a variant of the central find() method.
  * To identify molecules that need to be filtered from the input set or preprocessed in this use case, convenience methods are
- * available in this class.
+ * available in this class. Please note that structural properties like formal charges and the others mentioned above
+ * are not expected to cause issues (exceptions) when processed by this class, but they are not explicitly regarded by
+ * the Ertl algorithm and hence this implementation, too. They might therefore cause unexpected behaviour in functional
+ * group identification. For example, a charge is not listed as a reason to mark a carbon atom.
  * <br></br>
  * <br></br>Note: this implementation is not thread-safe. Each parallel thread should have its own instance of this class.
  *
@@ -759,6 +762,7 @@ public class ErtlFunctionalGroupsFinder {
                 try {
                     tmpConnectedAtom = aMolecule.getAtom(this.adjListCache[idx][0]);
                 } catch(ArrayIndexOutOfBoundsException anException) {
+                    //TODO: this happens too often to ignore, investigate!
                     ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn("Explicit H was included in atom count but not correctly in adjacency list");
                     break;
                 }
@@ -1302,7 +1306,7 @@ public class ErtlFunctionalGroupsFinder {
         //Developer's note: this method does not use the public isStructureUnconnected() method because it is intertwined with the
         // find() method for speed-up; but it basically does the same.
         ConnectedComponents tmpConnectedComponents = new ConnectedComponents(this.adjListCache);
-        if (tmpConnectedComponents.nComponents() != 1) {
+        if (tmpConnectedComponents.nComponents() > 1) {
             throw new IllegalArgumentException("Input molecule must consist of only a single connected structure.");
         }
     }

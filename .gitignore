@@ -14,3 +14,4 @@ build/
 
 # EFGF evaluation test output
 ErtlFunctionalGroupsFinderEvaluationTest_Output/
+ChEBI_complete.sdf
