@@ -50,13 +50,43 @@ import java.util.Set;
  * Finds and extracts a molecule's functional groups in a purely rule-based manner.
  * This class implements Peter Ertl's algorithm for the automated detection and extraction
  * of functional groups in organic molecules
- * (<a href="https://doi.org/10.1186/s13321-017-0225-z">[Ertl P. An algorithm to identify functional groups in organic molecules. J Cheminform. 2017; 9:36.])</a>.
- * <p>
- *     Note: this implementation is not thread-safe. Each parallel thread should have its own instance of this class.
- * </p>
+ * (<a href="https://doi.org/10.1186/s13321-017-0225-z">[Ertl P. An algorithm to identify functional groups in organic molecules. J Cheminform. 2017; 9:36.]</a>)
+ * and has been described in a scientific publication
+ * (<a href="https://doi.org/10.1186/s13321-019-0361-8">[Fritsch, S., Neumann, S., Schaub, J. et al. ErtlFunctionalGroupsFinder: automated rule-based functional group detection with the Chemistry Development Kit (CDK). J Cheminform. 2019; 11:37.]</a>).
+ * <br></br>
+ * <br></br>In brief, the algorithm iterates through all atoms in the input molecule and marks hetero atoms and specific carbon atoms
+ * (i.a. those in non-aromatic double or triple bonds etc.) as being part of a functional group. Connected groups of marked
+ * atoms are extracted as separate functional groups, together with their unmarked, "environmental" carbon atoms. These
+ * environments can be important, e.g. to differentiate an alcohol from a phenol, but are less important in other cases.
+ * To account for this, Ertl also devised a "generalization" scheme that generalizes the functional group environments
+ * in a way that accounts for their varying significance in different cases. Most environmental atoms are exchanged with
+ * pseudo ("R") atoms there. All these functionalities are available in ErtlFunctionalgroupsFinder. Additionally, only
+ * the marked atoms completely without their environments can be extracted.
+ * <br></br>
+ * <br></br>To apply functional group detection to an input molecule, its atom types need to be set and aromaticity needs
+ * to be detected beforehand:
+ * <blockquote><pre>
+ * //Prepare input
+ * SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+ * IAtomContainer tmpInputMol = tmpSmiPar.parseSmiles("C[C@@H]1CN(C[C@H](C)N1)C2=C(C(=C3C(=C2F)N(C=C(C3=O)C(=O)O)C4CC4)N)F"); //PubChem CID 5257
+ * AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpInputMol);
+ * Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+ * tmpAromaticity.apply(tmpInputMol);
+ * //Identify functional groups
+ * ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(); //default: generalization turned on
+ * List{@literal <}IAtomContainer{@literal >} tmpFunctionalGroupsList = tmpEFGF.find(tmpInputMol);
+ * </pre></blockquote>
+ * In order to only identify functional groups in standardised, organic structures, ErtlFunctionalGroupsFinder can
+ * be configured to only accept molecules that do *not* contain any metal, metalloid, or pseudo (R) atoms or formal charges.
+ * Also structures consisting of more than one unconnected component (e.g. ion and counter-ion) are not accepted if the
+ * strict input restrictions are turned on. This can be done via a boolean parameter in a variant of the central find() method.
+ * To identify molecules that need to be filtered from the input set or preprocessed in this use case, convenience methods are
+ * available in this class.
+ * <br></br>
+ * <br></br>Note: this implementation is not thread-safe. Each parallel thread should have its own instance of this class.
  *
  * @author Sebastian Fritsch, Jonas Schaub
- * @version 1.2.1
+ * @version 1.3
  */
 public class ErtlFunctionalGroupsFinder {
     /**
@@ -330,7 +360,7 @@ public class ErtlFunctionalGroupsFinder {
      * @throws CloneNotSupportedException if cloning is not possible
      * @return a list with all functional groups found in the molecule
      */
-    public List<IAtomContainer> find (IAtomContainer aMolecule, boolean aShouldInputBeCloned) throws CloneNotSupportedException {
+    public List<IAtomContainer> find(IAtomContainer aMolecule, boolean aShouldInputBeCloned) throws CloneNotSupportedException {
         return this.find(aMolecule, aShouldInputBeCloned, false);
     }
     //
@@ -389,142 +419,7 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
-     * Returns the unmodifiable set containing the atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find()
-     * if(!) input restrictions are enabled (turned off by default). These nonmetal elements include
-     * hydrogen, carbon, nitrogen, oxygen, phosphorus, sulfur, selenium, halogens (fluorine, chlorine, bromine, iodine),
-     * and noble gases (helium, neon, argon, krypton, xenon, radon).
-     * All other atomic numbers represent metal, metalloid, or pseudo ('R') atoms.
-     * <br>Convenience method analogous to using <code>ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS</code> directly.
-     *
-     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find() if input restrictions are activated
-     */
-    public static Set<Integer> getNonmetalAtomicNumbers() {
-        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS;
-    }
-    //
-    /**
-     * Checks whether a given atom is a metal, metalloid, or pseudo atom judging by its atomic number. These atoms
-     * cannot be passed on to ErtlFunctionalGroupsFinder.find()
-     * if(!) input restrictions are enabled (turned off by default).
-     *
-     * @param anAtom the atom to check
-     * @return true, if the atomic number is not in the nonmetal atomic numbers set or 'null'
-     * @throws NullPointerException if the given atom or its atomic number is 'null'
-     */
-    public static boolean isMetalMetalloidOrPseudoAtom(IAtom anAtom) throws NullPointerException {
-        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
-        Objects.requireNonNull(anAtom.getAtomicNumber(), "Atomic number is 'null'.");
-        return !ErtlFunctionalGroupsFinder.isNonmetal(anAtom);
-    }
-    //
-    /**
-     * Iterates through all atoms in the given molecule and checks them for metal, metalloid, and pseudo ("R") atoms. If this
-     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
-     * if(!) input restrictions are enabled (turned off by default).
-     * <br>This method scales linearly with O(n) with n: number of atoms in the given
-     * molecule.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule contains one or more metal, metalloid, or pseudo ("R") atoms
-     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
-     */
-    public static boolean containsMetalMetalloidOrPseudoAtom(IAtomContainer aMolecule) throws NullPointerException {
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
-        boolean tmpIsAtomicNumberInvalid;
-        for (IAtom tmpAtom : aMolecule.atoms()) {
-            // throws NullPointerException if tmpAtom or its atomic number is 'null'
-            tmpIsAtomicNumberInvalid = ErtlFunctionalGroupsFinder.isMetalMetalloidOrPseudoAtom(tmpAtom);
-            if (tmpIsAtomicNumberInvalid) {
-                return true;
-            }
-        }
-        return false;
-    }
-    //
-    /**
-     * Checks whether a given atom is charged. These atoms cannot be passed on to ErtlFunctionalGroupsFinder.find()
-     * if(!) input restrictions are enabled (turned off by default).
-     *
-     * @param anAtom the atom to check
-     * @return true, if the atom is charged
-     * @throws NullPointerException if the given atom or its formal charge is 'null'
-     */
-    public static boolean isCharged(IAtom anAtom) throws NullPointerException {
-        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
-        Integer tmpFormalCharge = anAtom.getFormalCharge();
-        Objects.requireNonNull(tmpFormalCharge, "Formal charge is 'null'.");
-        return (tmpFormalCharge.intValue() != 0);
-    }
-    //
-    /**
-     * Iterates through all atoms in the given molecule and checks whether they are charged. If this
-     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
-     * if(!) input restrictions are enabled (turned off by default).
-     * <br>This method scales linearly with O(n) with n: number of atoms in the given
-     * molecule.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule contains one or more charged atoms
-     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
-     */
-    public static boolean containsChargedAtom(IAtomContainer aMolecule) throws NullPointerException {
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
-        int tmpAtomCount = aMolecule.getAtomCount();
-        boolean tmpIsAtomCharged;
-        for (IAtom tmpAtom : aMolecule.atoms()) {
-            //Throws NullPointerException if tmpAtom is 'null'
-            tmpIsAtomCharged = ErtlFunctionalGroupsFinder.isCharged(tmpAtom);
-            if (tmpIsAtomCharged) {
-                return true;
-            }
-        }
-        return false;
-    }
-    //
-    /**
-     * Checks whether the given molecule consists of two or more unconnected structures, e.g. ion and counter-ion. This
-     * would make it unfit to be passed to ErtlFunctionalGroupsFinder.find() if(!) the input restrictions are turned on (turned off by default).
-     * Note: this is a convenience method basically applying <code>ConnectivityChecker.isConnected(aMolecule);</code>.
-     *
-     * @param aMolecule the molecule to check
-     * @return true, if the molecule consists of two or more unconnected structures
-     * @throws NullPointerException if the given molecule is 'null'
-     */
-    public static boolean isStructureUnconnected(IAtomContainer aMolecule) throws NullPointerException {
-        //Developer's note: the private checkConstraints() method is not used here because it is intertwined with the
-        // find() method for speed-up; but it basically does the same.
-        Objects.requireNonNull(aMolecule, "Given molecule is 'null'");
-        boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
-        return (!tmpIsConnected);
-    }
-    //
-    /**
-     * Checks whether the given molecule represented by an atom container can be passed on to the
-     * ErtlFunctionalGroupsFinder.find() method without problems.
-     * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms or consists of
-     * multiple unconnected parts.
-     *
-     * @param aMolecule the molecule to check
-     * @return true if the given molecule is a valid parameter for ErtlFunctionalGroupsFinder.find() method if(!) the input restrictions are turned on (turned off by default)
-     * @throws NullPointerException if parameter is 'null'
-     * @throws IllegalArgumentException if the input molecule causes any other type of exception while processing
-     */
-    public static boolean isValidInputMoleculeWithRestrictionsTurnedOn(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException {
-        Objects.requireNonNull(aMolecule, "Given molecule is null.");
-        boolean tmpIsValid;
-        try {
-            tmpIsValid = !(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
-                    || ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
-                    || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
-        } catch (Exception anException) {
-            ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn(anException);
-            throw new IllegalArgumentException(anException);
-        }
-        return tmpIsValid;
-    }
-    //
-    /**
-     * Applies the necessary preprocessing for functional group detection. Atom types are set and aromaticity detected
+     * Applies the always necessary preprocessing for functional group detection. Atom types are set and aromaticity detected
      * in the input molecule.
      * <br>NOTE: This changes properties and flags in the given atom container instance. If you
      * want to retain your object unchanged for future calculations, use the IAtomContainer's
@@ -547,6 +442,151 @@ public class ErtlFunctionalGroupsFinder {
             ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn(anException);
             throw new IllegalArgumentException(anException);
         }
+    }
+    //
+    /**
+     * Returns the unmodifiable set containing the atomic numbers that can be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default). These nonmetal elements include
+     * hydrogen, carbon, nitrogen, oxygen, phosphorus, sulfur, selenium, halogens (fluorine, chlorine, bromine, iodine),
+     * and noble gases (helium, neon, argon, krypton, xenon, radon).
+     * All other atomic numbers represent metal, metalloid, or pseudo ('R') atoms.
+     * <br>Convenience method analogous to using <code>ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS</code> directly.
+     *
+     * @return all valid atomic numbers for ErtlFunctionalGroupsFinder.find() if input restrictions are activated
+     */
+    public static Set<Integer> getNonmetalAtomicNumbers() {
+        return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS;
+    }
+    //
+    /**
+     * Checks whether a given atom is a metal, metalloid, or pseudo atom judging by its atomic number. These atoms
+     * cannot be passed on to ErtlFunctionalGroupsFinder.find() if(!) input restrictions are enabled (turned off by default).
+     *
+     * @param anAtom the atom to check
+     * @return true, if the atomic number is not in the nonmetal atomic numbers set or 'null'
+     * @throws NullPointerException if the given atom is 'null'
+     */
+    public static boolean isMetalMetalloidOrPseudoAtom(IAtom anAtom) throws NullPointerException {
+        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
+        if (Objects.isNull(anAtom.getAtomicNumber())) {
+            return true;
+        }
+        return !ErtlFunctionalGroupsFinder.isNonmetal(anAtom);
+    }
+    //
+    /**
+     * Iterates through all atoms in the given molecule and checks them for metal, metalloid, and pseudo ("R") atoms. If this
+     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default). If you are using the strict input restrictions to
+     * only identify functional groups in standardised, organic structures, you should filter the molecules where this
+     * method returns true from your input set.
+     * <br>This method scales linearly with O(n) with n: number of atoms in the given
+     * molecule.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule contains one or more metal, metalloid, or pseudo ("R") atoms
+     * @throws NullPointerException if the given molecule (or one of its atoms) is 'null'
+     */
+    public static boolean containsMetalMetalloidOrPseudoAtom(IAtomContainer aMolecule) throws NullPointerException {
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
+        boolean tmpIsAtomicNumberInvalid;
+        for (IAtom tmpAtom : aMolecule.atoms()) {
+            // throws NullPointerException if tmpAtom is 'null'
+            tmpIsAtomicNumberInvalid = ErtlFunctionalGroupsFinder.isMetalMetalloidOrPseudoAtom(tmpAtom);
+            if (tmpIsAtomicNumberInvalid) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //
+    /**
+     * Checks whether a given atom is charged. These atoms cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default).
+     *
+     * @param anAtom the atom to check
+     * @return true, if the atom is charged
+     * @throws NullPointerException if the given atom is 'null'
+     */
+    public static boolean isCharged(IAtom anAtom) throws NullPointerException {
+        Objects.requireNonNull(anAtom, "Given atom is 'null'.");
+        Integer tmpFormalCharge = anAtom.getFormalCharge();
+        if (Objects.isNull(tmpFormalCharge)) {
+            return false;
+        }
+        return (tmpFormalCharge.intValue() != 0);
+    }
+    //
+    /**
+     * Iterates through all atoms in the given molecule and checks whether they are charged. If this
+     * method returns 'true', the molecule cannot be passed on to ErtlFunctionalGroupsFinder.find()
+     * if(!) input restrictions are enabled (turned off by default). If you are using the strict input restrictions to
+     * only identify functional groups in standardised, organic structures, you can try to neutralise the charges in the
+     * molecules where this method returns true by standardisation routines.
+     * <br>This method scales linearly with O(n) with n: number of atoms in the given
+     * molecule.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule contains one or more charged atoms
+     * @throws NullPointerException if the given molecule is 'null'
+     */
+    public static boolean containsChargedAtom(IAtomContainer aMolecule) throws NullPointerException {
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
+        boolean tmpIsAtomCharged;
+        for (IAtom tmpAtom : aMolecule.atoms()) {
+            //Throws NullPointerException if tmpAtom is 'null'
+            tmpIsAtomCharged = ErtlFunctionalGroupsFinder.isCharged(tmpAtom);
+            if (tmpIsAtomCharged) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //
+    /**
+     * Checks whether the given molecule consists of two or more unconnected structures, e.g. ion and counter-ion. This
+     * would make it unfit to be passed to ErtlFunctionalGroupsFinder.find() if(!) the input restrictions are turned on (turned off by default).
+     * If you are using the strict input restrictions to only identify functional groups in standardised, organic structures,
+     * you can try to select the biggest connected component in the input atom containers where this method returns true
+     * and only pass that to ErtlFunctionalGroupsFinder.
+     * Note: this is a convenience method basically applying <code>ConnectivityChecker.isConnected(aMolecule);</code>.
+     *
+     * @param aMolecule the molecule to check
+     * @return true, if the molecule consists of two or more unconnected structures
+     * @throws NullPointerException if the given molecule is 'null'
+     */
+    public static boolean isStructureUnconnected(IAtomContainer aMolecule) throws NullPointerException {
+        //Developer's note: the private checkConstraints() method is not used here because it is intertwined with the
+        // find() method for speed-up; but it basically does the same.
+        Objects.requireNonNull(aMolecule, "Given molecule is 'null'");
+        boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
+        return (!tmpIsConnected);
+    }
+    //
+    /**
+     * Checks whether the given molecule represented by an atom container can be passed on to the
+     * ErtlFunctionalGroupsFinder.find() method without problems even if(!) the input restrictions are turned on (turned off by default).
+     * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms or consists of
+     * multiple unconnected parts. Some of these issues (charges and multiple unconnected components) can be solved by
+     * respective standardisation routines.
+     *
+     * @param aMolecule the molecule to check
+     * @return true if the given molecule is a valid parameter for ErtlFunctionalGroupsFinder.find() method if(!) the input restrictions are turned on (turned off by default)
+     * @throws NullPointerException if parameter is 'null'
+     * @throws IllegalArgumentException if the input molecule causes any other type of exception while processing
+     */
+    public static boolean isValidInputMoleculeWithRestrictionsTurnedOn(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException {
+        Objects.requireNonNull(aMolecule, "Given molecule is null.");
+        boolean tmpIsValid;
+        try {
+            tmpIsValid = !(ErtlFunctionalGroupsFinder.containsMetalMetalloidOrPseudoAtom(aMolecule)
+                    || ErtlFunctionalGroupsFinder.containsChargedAtom(aMolecule)
+                    || ErtlFunctionalGroupsFinder.isStructureUnconnected(aMolecule));
+        } catch (Exception anException) {
+            ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn(anException);
+            throw new IllegalArgumentException(anException);
+        }
+        return tmpIsValid;
     }
     //
     /**
