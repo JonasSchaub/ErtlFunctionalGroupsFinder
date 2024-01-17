@@ -21,7 +21,6 @@
 package org.openscience.cdk.tools;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.PseudoAtom;
@@ -35,7 +34,6 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IBond.Order;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IPseudoAtom;
-import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.Mappings;
 import org.openscience.cdk.isomorphism.Pattern;
 import org.openscience.cdk.isomorphism.VentoFoggia;
@@ -48,7 +46,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Test for ErtlFunctionalGroupsFinder.
@@ -503,7 +500,7 @@ public class ErtlFunctionalGroupsFinderTest {
             System.out.println(tmpSmiGen.create(tmpFG));
         }
     }
-    //
+    //TODO: test R atoms!
     /**
      * Tests functional group identification on example molecules that contain metal or metalloid atoms.
      *
@@ -523,7 +520,7 @@ public class ErtlFunctionalGroupsFinderTest {
         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
         tmpAromaticity.apply(tmpTetraethylOrthosilicate);
 
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
         List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
 
         System.out.println("Tetraethyl Orthosilicate:");
@@ -543,96 +540,6 @@ public class ErtlFunctionalGroupsFinderTest {
         }
     }
     //TODO: add test molecules for these special cases to the testFind#() methods? After Achim agreed
-    /**
-     * TODO: what to do with this method, keep the analysis of the subset?
-     *
-     * ChEBI complete (184933 structures in file (some will automatically be skipped by SDF reader)):
-     * Number of parsed molecules: 184930
-     * Exceptions while preprocessing: 0
-     * Molecules that would be filtered due to input restrictions: 29637
-     * Exceptions with restrictions (prefiltered): 0
-     * Exceptions without restrictions: 0
-     *
-     * ChEBI lite 3-star subset SDF (1396 structures in file (some will automatically be skipped by SDF reader)):
-     * Number of parsed molecules: 1396
-     * Exceptions while preprocessing: 0
-     * Molecules that would be filtered due to input restrictions: 251
-     * Exceptions with restrictions (prefiltered): 0
-     * Exceptions without restrictions: 0
-     *
-     *
-     * @throws Exception if anything goes wrong
-     */
-    @Test
-    public void readChebiLite3StarSubset() throws Exception {
-        IteratingSDFReader tmpChebiSDFReader = null;
-        try {
-            tmpChebiSDFReader = new IteratingSDFReader(
-                    ErtlFunctionalGroupsFinderTest.class.getResourceAsStream("ChEBI_lite_3star_subset.sdf"),
-                    SilentChemObjectBuilder.getInstance(),
-                    true);
-        } catch (Exception e) {
-            System.out.println("\nSD file could not be found. Test is ignored.");
-            Assumptions.assumeTrue(false);
-            return;
-        }
-        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        int tmpMoleculeCouter = 0;
-        int tmpExceptionsCounter = 0;
-        int tmpExceptionsWithRestrictionsCounter = 0;
-        int tmpExceptionsWithoutRestrictionsCounter = 0;
-        int tmpMoleculesFilteredCounter = 0;
-        while (tmpChebiSDFReader.hasNext()) {
-            IAtomContainer tmpMolecule = null;
-            tmpMoleculeCouter++;
-            try {
-                tmpMolecule = tmpChebiSDFReader.next();
-                AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMolecule);
-                tmpAromaticity.apply(tmpMolecule);
-                tmpMolecule = tmpMolecule.clone();
-            } catch (Exception anException) {
-                tmpExceptionsCounter++;
-                if (!Objects.isNull(tmpMolecule)) {
-                    System.out.println(tmpMolecule.getProperty("ChEBI ID") + "," + anException.toString() + "," + tmpMoleculeCouter);
-                } else {
-                    System.out.println("Could not parse molecule! Counter: " + tmpMoleculeCouter);
-                }
-                continue;
-            }
-            try {
-                if (ErtlFunctionalGroupsFinder.isValidInputMoleculeWithRestrictionsTurnedOn(tmpMolecule)) {
-                    List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule, false, true);
-                } else {
-                    //TODO: save these structures somewhere for inspection?
-                    tmpMoleculesFilteredCounter++;
-                }
-            } catch (Exception anException) {
-                tmpExceptionsWithRestrictionsCounter++;
-                if (!Objects.isNull(tmpMolecule)) {
-                    System.out.println(tmpMolecule.getProperty("ChEBI ID") + "," + anException.toString() + "," + tmpMoleculeCouter);
-                } else {
-                    System.out.println("Could not identify FG in molecule! Counter: " + tmpMoleculeCouter);
-                }
-            }
-            try {
-                List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule, false, false);
-            } catch (Exception anException) {
-                tmpExceptionsWithoutRestrictionsCounter++;
-                if (!Objects.isNull(tmpMolecule)) {
-                    System.out.println(tmpMolecule.getProperty("ChEBI ID") + "," + anException.toString() + "," + tmpMoleculeCouter);
-                } else {
-                    System.out.println("Could not identify FG in molecule! Counter: " + tmpMoleculeCouter);
-                }
-                continue;
-            }
-        }
-        System.out.println("Number of parsed molecules: " + tmpMoleculeCouter);
-        System.out.println("Exceptions while preprocessing: " + tmpExceptionsCounter);
-        System.out.println("Molecules that would be filtered due to input restrictions: " + tmpMoleculesFilteredCounter);
-        System.out.println("Exceptions with restrictions (prefiltered): " + tmpExceptionsWithRestrictionsCounter);
-        System.out.println("Exceptions without restrictions: " + tmpExceptionsWithoutRestrictionsCounter);
-    }
     //
     /**
      * Applies EFGF to detect functional groups in the given molecule and compares the identified FG to the given

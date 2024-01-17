@@ -1184,7 +1184,7 @@ public class ErtlFunctionalGroupsFinder {
      */
     private boolean isHeteroatom(IAtom anAtom) {
         Integer tmpAtomicNr = anAtom.getAtomicNumber();
-        return tmpAtomicNr != 1 && tmpAtomicNr != 6 && tmpAtomicNr != 0 && tmpAtomicNr != null && !(anAtom instanceof PseudoAtom) && !(anAtom.getSymbol().contains("R"));
+        return tmpAtomicNr != 1 && tmpAtomicNr != 6 && tmpAtomicNr != 0 && tmpAtomicNr != null && !(anAtom instanceof PseudoAtom);
     }
     //
     /**
