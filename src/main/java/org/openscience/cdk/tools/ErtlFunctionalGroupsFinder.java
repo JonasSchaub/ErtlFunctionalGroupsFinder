@@ -53,8 +53,8 @@ import java.util.Set;
  * (<a href="https://doi.org/10.1186/s13321-017-0225-z">[Ertl P. An algorithm to identify functional groups in organic molecules. J Cheminform. 2017; 9:36.]</a>)
  * and has been described in a scientific publication
  * (<a href="https://doi.org/10.1186/s13321-019-0361-8">[Fritsch, S., Neumann, S., Schaub, J. et al. ErtlFunctionalGroupsFinder: automated rule-based functional group detection with the Chemistry Development Kit (CDK). J Cheminform. 2019; 11:37.]</a>).
- * <br></br>
- * <br></br>In brief, the algorithm iterates through all atoms in the input molecule and marks hetero atoms and specific carbon atoms
+ * <br>
+ * <br>In brief, the algorithm iterates through all atoms in the input molecule and marks hetero atoms and specific carbon atoms
  * (i.a. those in non-aromatic double or triple bonds etc.) as being part of a functional group. Connected groups of marked
  * atoms are extracted as separate functional groups, together with their unmarked, "environmental" carbon atoms. These
  * environments can be important, e.g. to differentiate an alcohol from a phenol, but are less important in other cases.
@@ -62,8 +62,8 @@ import java.util.Set;
  * in a way that accounts for their varying significance in different cases. Most environmental atoms are exchanged with
  * pseudo ("R") atoms there. All these functionalities are available in ErtlFunctionalgroupsFinder. Additionally, only
  * the marked atoms completely without their environments can be extracted.
- * <br></br>
- * <br></br>To apply functional group detection to an input molecule, its atom types need to be set and aromaticity needs
+ * <br>
+ * <br>To apply functional group detection to an input molecule, its atom types need to be set and aromaticity needs
  * to be detected beforehand:
  * <blockquote><pre>
  * //Prepare input
@@ -85,8 +85,8 @@ import java.util.Set;
  * are not expected to cause issues (exceptions) when processed by this class, but they are not explicitly regarded by
  * the Ertl algorithm and hence this implementation, too. They might therefore cause unexpected behaviour in functional
  * group identification. For example, a charge is not listed as a reason to mark a carbon atom.
- * <br></br>
- * <br></br>Note: this implementation is not thread-safe. Each parallel thread should have its own instance of this class.
+ * <br>
+ * <br>Note: this implementation is not thread-safe. Each parallel thread should have its own instance of this class.
  *
  * @author Sebastian Fritsch, Jonas Schaub
  * @version 1.3
