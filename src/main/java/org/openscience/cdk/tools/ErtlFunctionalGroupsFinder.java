@@ -20,6 +20,7 @@
 
 package org.openscience.cdk.tools;
 
+import org.openscience.cdk.PseudoAtom;
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.graph.ConnectedComponents;
 import org.openscience.cdk.graph.ConnectivityChecker;
@@ -755,7 +756,7 @@ public class ErtlFunctionalGroupsFinder {
                     continue;
                 }
                 // if none of the conditions 2.X apply, we have an unmarked C (not relevant here)
-            } else if (tmpAtomicNr == 1){
+            } else if (tmpAtomicNr == 1) {
                 // if H...
                 // convert to implicit H
                 IAtom tmpConnectedAtom;
@@ -772,7 +773,7 @@ public class ErtlFunctionalGroupsFinder {
                     tmpConnectedAtom.setImplicitHydrogenCount(tmpConnectedAtom.getImplicitHydrogenCount() + 1);
                 }
                 continue;
-            } else {
+            } else if (this.isHeteroatom(tmpAtom)) {
                 // if heteroatom... (CONDITION 1)
                 this.markedAtomsCache.add(idx);
                 if (ErtlFunctionalGroupsFinder.isDbg()) {
@@ -781,6 +782,9 @@ public class ErtlFunctionalGroupsFinder {
                             idx,
                             tmpAtom.getSymbol()));
                 }
+                continue;
+            } else {
+                //pseudo (R) atom, ignored
                 continue;
             }
         } //end of for loop that iterates over all atoms in the mol
@@ -1173,26 +1177,29 @@ public class ErtlFunctionalGroupsFinder {
     }
     //
     /**
-     * Checks whether the given atom is a hetero-atom (i.e. non-carbon and non-hydrogen, judged by atomic number).
+     * Checks whether the given atom is a hetero-atom (i.e. non-carbon and non-hydrogen). Pseudo (R) atoms will also return false!
      *
      * @param anAtom the atom to test
-     * @return true if the given atom is neither a carbon nor a hydrogen atom
+     * @return true if the given atom is neither a carbon nor a hydrogen or pseudo atom
      */
     private boolean isHeteroatom(IAtom anAtom) {
-        int tmpAtomicNr = anAtom.getAtomicNumber();
-        return tmpAtomicNr != 1 && tmpAtomicNr != 6;
+        Integer tmpAtomicNr = anAtom.getAtomicNumber();
+        return tmpAtomicNr != 1 && tmpAtomicNr != 6 && tmpAtomicNr != 0 && tmpAtomicNr != null && !(anAtom instanceof PseudoAtom) && !(anAtom.getSymbol().contains("R"));
     }
     //
     /**
      * Checks whether the given atom is from an element in the organic subset, i.e. not a metal or metalloid atom.
-     * See the public constant set of non-metal atomic numbers declared in this class. Given as static here because it is
-     * used by static public utility methods
+     * See the public constant set of non-metal atomic numbers declared in this class. Pseudo (R) atoms will also return false.
+     * Given as static method here because it is used by static public utility methods (developer's note).
      *
      * @param anAtom atom to check
      * @return true if the given atom is organic and not a metal or metalloid atom
      */
     private static boolean isNonmetal(IAtom anAtom) {
         Integer tmpAtomicNumber = anAtom.getAtomicNumber();
+        if (Objects.isNull(tmpAtomicNumber)) {
+            return false;
+        }
         int tmpAtomicNumberInt = tmpAtomicNumber.intValue();
         return ErtlFunctionalGroupsFinder.NONMETAL_ATOMIC_NUMBERS.contains(tmpAtomicNumberInt);
     }
