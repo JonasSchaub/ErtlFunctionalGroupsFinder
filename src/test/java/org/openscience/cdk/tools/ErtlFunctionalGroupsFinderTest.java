@@ -384,6 +384,17 @@ public class ErtlFunctionalGroupsFinderTest {
         for (IAtomContainer tmpFG : tmpFGList) {
             System.out.println(tmpSmiGen.create(tmpFG));
         }
+
+        IAtomContainer tmpTestFind1 = tmpSmiPar.parseSmiles("Cc1cc(C)nc(NS(=O)(=O)c2ccc(N)cc2)n1");
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTestFind1);
+        tmpAromaticity.apply(tmpTestFind1);
+
+        tmpFGList = tmpEFGF.find(tmpTestFind1);
+
+        System.out.println("Test Find 1:");
+        for (IAtomContainer tmpFG : tmpFGList) {
+            System.out.println(tmpSmiGen.create(tmpFG));
+        }
     }
     //
     /**
