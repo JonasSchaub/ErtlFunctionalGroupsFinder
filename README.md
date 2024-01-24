@@ -6,8 +6,11 @@
 [![GitHub issues](https://img.shields.io/github/issues/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/issues/)
 [![GitHub contributors](https://img.shields.io/github/contributors/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/graphs/contributors/)
 [![GitHub release](https://img.shields.io/github/release/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/releases/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder)
+[![Maven Central - Search index](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder)
+[![Maven Central - Artifact page](https://img.shields.io/badge/Maven_Central-Artifact_page-2ea44f)](https://central.sonatype.com/artifact/io.github.jonasschaub/ErtlFunctionalGroupsFinder/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JonasSchaub_ErtlFunctionalGroupsFinder&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JonasSchaub_ErtlFunctionalGroupsFinder)
+[![Software Article - JChemInf](https://img.shields.io/badge/Software_Article-JChemInf-blue)](https://doi.org/10.1186/s13321-019-0361-8)
+[![GitHub - Wiki](https://img.shields.io/badge/GitHub-Wiki-blue?logo=GitHub)](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki)
 
 
 ![ErtlFunctionalGroupsFinder_logo](./Logo/Ertl.png)
