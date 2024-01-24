@@ -240,4 +240,19 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
             System.out.println(ErtlFunctionalGroupsFinderUtility.createPseudoSmilesCode(tmpFG));
         }
     }
+
+    /**
+     * Test charge neutralization.
+     */
+    @Test
+    public void testNeutralization() throws Exception {
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        IAtomContainer tmpAmmonia = tmpSmiPar.parseSmiles("[NH4+]");
+        ErtlFunctionalGroupsFinderUtility.neutralizeCharges(tmpAmmonia);
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical);
+        System.out.println(tmpSmiGen.create(tmpAmmonia));
+        IAtomContainer tmpNitro = tmpSmiPar.parseSmiles("C[N+](=O)[O-]");
+        ErtlFunctionalGroupsFinderUtility.neutralizeCharges(tmpNitro);
+        System.out.println(tmpSmiGen.create(tmpNitro));
+    }
 }
