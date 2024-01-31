@@ -43,7 +43,7 @@ which allows distribution and modification.
 
 ### Performance Snapshot CMD Application
 The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
-contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar</i>.
+contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp.jar</i>.
 It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find() 
 method under parallelization on multiple threads.
 For more details see the file 
@@ -63,7 +63,7 @@ will need to be installed via JAR archives as well this way.
 <br>
 In order to open the project locally, e.g. to extend it, download or clone the repository and
 open it in a Gradle-supporting IDE (e.g. IntelliJ) as a Gradle project and execute the build.gradle file.
-Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 21 or higher must also
+Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 11 or higher must also
 be pre-installed.
 
 ## Dependencies
