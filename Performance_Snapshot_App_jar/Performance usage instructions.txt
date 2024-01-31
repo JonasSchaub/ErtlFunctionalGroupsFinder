@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Performance usage instructions with Java 21 (or higher)
+Performance usage instructions with Java 11 (or higher)
 --------------------------------------------------------------------------------
 1. Install Java 11 (or higher) on your machine (if necessary)
 2. Copy the content of this sub-folder to a destination directory on your 
