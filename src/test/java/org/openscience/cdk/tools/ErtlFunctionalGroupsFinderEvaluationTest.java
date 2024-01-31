@@ -81,6 +81,9 @@ import java.util.Set;
  * <p>
  * Note for addition of new tests: Only one SD file should be analyzed per test method (since some mechanisms work under
  * that assumption).
+ * <p>
+ * Note that this code was written before the class ErtlFunctionalGroupsFinderUtility was implemented to make this type
+ * of analyses more straightforward using its utility method. This test class here therefore does not use the EFGFUtility class.
  *
  * @author Jonas Schaub
  * @version 1.2

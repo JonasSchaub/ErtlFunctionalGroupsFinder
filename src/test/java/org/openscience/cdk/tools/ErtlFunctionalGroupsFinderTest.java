@@ -354,164 +354,142 @@ public class ErtlFunctionalGroupsFinderTest {
     }
     //
     /**
-     * TODO: more testing necessary
-     */
-    @Test
-    public void testOnlyMarkedAtoms() throws Exception {
-        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
-        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-
-        IAtomContainer tmpTetraethylOrthosilicate = tmpSmiPar.parseSmiles("CCO[Si](OCC)(OCC)OCC");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
-        tmpAromaticity.apply(tmpTetraethylOrthosilicate);
-
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
-        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
-
-        System.out.println("Tetraethyl Orthosilicate:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpCHEMBL1201736 = tmpSmiPar.parseSmiles("CO/N=C(\\C(=O)N[C@@H]1C(=O)N2C(C(=O)[O-])=C(C[N+]3(C)CCCC3)CS[C@H]12)c1csc(N)n1.Cl");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpCHEMBL1201736);
-        tmpAromaticity.apply(tmpCHEMBL1201736);
-
-        tmpFGList = tmpEFGF.find(tmpCHEMBL1201736);
-
-        System.out.println("CHEMBL1201736:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpTestFind1 = tmpSmiPar.parseSmiles("Cc1cc(C)nc(NS(=O)(=O)c2ccc(N)cc2)n1");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTestFind1);
-        tmpAromaticity.apply(tmpTestFind1);
-
-        tmpFGList = tmpEFGF.find(tmpTestFind1);
-
-        System.out.println("Test Find 1:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-    }
-    //
-    /**
-     * Tests functional group identification on example molecules that have formal charges.
+     * Tests correct functional group identification on an example molecule. Specifically, the extraction of only the marked atoms
+     * in a functional group is tested. This feature was added in a later version.
      *
      * @throws Exception if anything goes wrong
      * @author Jonas Schaub
      */
     @Test
-    public void testChargedMolecules() throws Exception {
-        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
-        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-
-        IAtomContainer tmpChargedASA = tmpSmiPar.parseSmiles("CC(=O)OC1=CC=CC=C1C(=O)[O+]");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpChargedASA);
-        tmpAromaticity.apply(tmpChargedASA);
-
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpChargedASA);
-
-        System.out.println("Charged ASA:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpNitroPhenol = tmpSmiPar.parseSmiles("C1=CC(=CC=C1[N+](=O)[O-])O");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpNitroPhenol);
-        tmpAromaticity.apply(tmpNitroPhenol);
-
-        tmpFGList = tmpEFGF.find(tmpNitroPhenol);
-
-        System.out.println("Nitrophenol:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpTetraMethylAmmonium = tmpSmiPar.parseSmiles("C[N+](C)(C)C");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraMethylAmmonium);
-        tmpAromaticity.apply(tmpTetraMethylAmmonium);
-
-        tmpFGList = tmpEFGF.find(tmpTetraMethylAmmonium);
-
-        System.out.println("Tetramethylammonium:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpCarbeniumIonInBetaPositionToBr = tmpSmiPar.parseSmiles("c1ccccc1[CH+]C(Br)C");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpCarbeniumIonInBetaPositionToBr);
-        tmpAromaticity.apply(tmpCarbeniumIonInBetaPositionToBr);
-
-        tmpEFGF.setEnvMode(ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
-        tmpFGList = tmpEFGF.find(tmpCarbeniumIonInBetaPositionToBr);
-
-        //Result: carbenium ion is ignored since a charge is not a reason to mark carbon atom
-        System.out.println("Carbenium ion in beta position to Br:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpCarbeniumIonInAlphaPositionToBr = tmpSmiPar.parseSmiles("c1ccccc1[C+](Br)C");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpCarbeniumIonInAlphaPositionToBr);
-        tmpAromaticity.apply(tmpCarbeniumIonInAlphaPositionToBr);
-
-        tmpFGList = tmpEFGF.find(tmpCarbeniumIonInAlphaPositionToBr, false);
-
-        //Result: carbenium ion is extracted as environmental carbon and replaced by a new atom instance as all env carbon atoms in EFGF; so it lost its charge!
-        System.out.println("Carbenium ion in alpha position to Br:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        //restore carbenium ion using the EFGFUtility:
-        ErtlFunctionalGroupsFinderUtility.restoreOriginalEnvironmentalCarbons(tmpFGList, tmpCarbeniumIonInAlphaPositionToBr, false, false, SilentChemObjectBuilder.getInstance());
-        System.out.println("Environmental carbon atoms restored on carbenium in alpha position to Br:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
+    public void testOnlyMarkedAtoms1() throws Exception {
+        String tmpMoleculeSmiles = "CCO[Si](OCC)(OCC)OCC"; //Tetraethyl Orthosilicate
+        String[] tmpExpectedFGs = new String[]{"[O][Si]([O])([O])[O]"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
     }
     //
     /**
-     * Tests functional group identification on example molecules that consist of more than one disconnected structure.
+     * Tests correct functional group identification on an example molecule. Specifically, the extraction of only the marked atoms
+     * in a functional group is tested. This feature was added in a later version.
      *
      * @throws Exception if anything goes wrong
      * @author Jonas Schaub
      */
     @Test
-    public void testDisconnectedMolecules() throws Exception {
-        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
-        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-
-        IAtomContainer tmpChlorhexidineDiacetate = tmpSmiPar.parseSmiles("CC(=O)O.CC(=O)O.C1=CC(=CC=C1NC(=NC(=NCCCCCCN=C(N)N=C(N)NC2=CC=C(C=C2)Cl)N)N)Cl");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpChlorhexidineDiacetate);
-        tmpAromaticity.apply(tmpChlorhexidineDiacetate);
-
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpChlorhexidineDiacetate);
-
-        System.out.println("Chlorhexidine Diacetate:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpSodiumEdetate = tmpSmiPar.parseSmiles("C(CN(CC(=O)[O-])CC(=O)[O-])N(CC(=O)[O-])CC(=O)[O-].[Na+].[Na+].[Na+].[Na+]");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpSodiumEdetate);
-        tmpAromaticity.apply(tmpSodiumEdetate);
-
-        tmpFGList = tmpEFGF.find(tmpSodiumEdetate);
-
-        System.out.println("Sodium edetate:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
+    public void testOnlyMarkedAtoms2() throws Exception {
+        String tmpMoleculeSmiles = "Cc1cc(C)nc(NS(=O)(=O)c2ccc(N)cc2)n1"; //same mol as testFind1() from the Ertl figure
+        String[] tmpExpectedFGs = new String[] {"O=[S](=O)[NH]", "[NH2]", "Nar" , "Nar"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
     }
-    //TODO: test R atoms!
+    //
+    /**
+     * Tests correct functional group identification on an example molecule. Specifically, the extraction of only the marked atoms
+     * in a functional group is tested. This feature was added in a later version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testOnlyMarkedAtoms3() throws Exception {
+        String tmpMoleculeSmiles = "CO/N=C(\\C(=O)N[C@@H]1C(=O)N2C(C(=O)[O-])=C(C[N+]3(C)CCCC3)CS[C@H]12)c1csc(N)n1.Cl"; //CHEMBL1201736
+        String[] tmpExpectedFGs = new String[] {"[O]N=[C]C(=O)[NH]", "[C]=C(C(=O)[O-])N([C]=O)[CH][S]", "[N+]", "[NH2]", "Cl", "Sar", "Nar"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.ONLY_MARKED_ATOMS);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with formal charges.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testChargedMolecules1() throws Exception {
+        String tmpMoleculeSmiles = "CC(=O)OC1=CC=CC=C1C(=O)[O+]"; //charged ASA
+        String[] tmpExpectedFGs = new String[] {"*OC(*)=O", "*C(=O)[O+]"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with formal charges.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testChargedMolecules2() throws Exception {
+        String tmpMoleculeSmiles = "C1=CC(=CC=C1[N+](=O)[O-])O"; //Nitrophenol
+        String[] tmpExpectedFGs = new String[] {"*[N+](=O)[O-]", "[H]O[c]"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with formal charges.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testChargedMolecules3() throws Exception {
+        String tmpMoleculeSmiles = "C[N+](C)(C)C"; //Tetramethylammonium
+        String[] tmpExpectedFGs = new String[] {"*[N+](*)(*)*"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with formal charges.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testChargedMolecules4() throws Exception {
+        String tmpMoleculeSmiles = "c1ccccc1[CH+]C(Br)C"; //Carbenium ion in beta position to Br
+        // carbenium ion is ignored since a charge is not a reason to mark carbon atom
+        String[] tmpExpectedFGs = new String[] {"[C]Br"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+
+        tmpMoleculeSmiles = "c1ccccc1[CH+]C(Br)C"; //Carbenium ion in beta position to Br
+        // carbenium ion is ignored since a charge is not a reason to mark carbon atom
+        tmpExpectedFGs = new String[] {"[C]Br"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+
+        tmpMoleculeSmiles = "c1ccccc1[C+](Br)C"; //Carbenium ion in alpha position to Br
+        // carbenium ion is extracted as environmental carbon and replaced by a new atom instance as all env carbon atoms in EFGF; so it lost its charge!
+        tmpExpectedFGs = new String[] {"[C]Br"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs, new Aromaticity(ElectronDonation.daylight(), Cycles.all()), ErtlFunctionalGroupsFinder.Mode.NO_GENERALIZATION);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with a disconnected structure.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testDisconnectedMolecules1() throws Exception {
+        String tmpMoleculeSmiles = "CC(=O)O.CC(=O)O.C1=CC(=CC=C1NC(=NC(=NCCCCCCN=C(N)N=C(N)NC2=CC=C(C=C2)Cl)N)N)Cl"; //Chlorhexidine Diacetate
+        String[] tmpExpectedFGs = new String[] {"*C(=O)O[H]", "*C(=O)O[H]", "*N=C(N=C(N(*)*)N(*)*)N(*)*", "*N=C(N=C(N(*)*)N(*)*)N(*)*", "*Cl", "*Cl"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
+     * Tests correct functional group identification on an example molecule with a disconnected structure.
+     * This was not allowed in a previous version.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testDisconnectedMolecules2() throws Exception {
+        String tmpMoleculeSmiles = "C(CN(CC(=O)[O-])CC(=O)[O-])N(CC(=O)[O-])CC(=O)[O-].[Na+].[Na+].[Na+].[Na+]"; //Sodium edetate
+        String[] tmpExpectedFGs = new String[] {"*N(*)*", "*C(=O)[O-]", "*C(=O)[O-]", "*N(*)*", "*C(=O)[O-]", "*C(=O)[O-]", "[Na+]", "[Na+]", "[Na+]", "[Na+]"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
     /**
      * Tests functional group identification on example molecules that contain metal or metalloid atoms.
      *
@@ -522,35 +500,37 @@ public class ErtlFunctionalGroupsFinderTest {
      * @author Jonas Schaub
      */
     @Test
-    public void testMetalsMetalloids() throws Exception {
-        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Canonical | SmiFlavor.UseAromaticSymbols);
-        Aromaticity tmpAromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-
-        IAtomContainer tmpTetraethylOrthosilicate = tmpSmiPar.parseSmiles("CCO[Si](OCC)(OCC)OCC");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpTetraethylOrthosilicate);
-        tmpAromaticity.apply(tmpTetraethylOrthosilicate);
-
-        ErtlFunctionalGroupsFinder tmpEFGF = new ErtlFunctionalGroupsFinder(ErtlFunctionalGroupsFinder.Mode.DEFAULT);
-        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpTetraethylOrthosilicate);
-
-        System.out.println("Tetraethyl Orthosilicate:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
-
-        IAtomContainer tmpKaolin = tmpSmiPar.parseSmiles("O.O.O=[Al]O[Si](=O)O[Si](=O)O[Al]=O");
-        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpKaolin);
-        tmpAromaticity.apply(tmpKaolin);
-
-        tmpFGList = tmpEFGF.find(tmpKaolin);
-
-        System.out.println("Kaolin:");
-        for (IAtomContainer tmpFG : tmpFGList) {
-            System.out.println(tmpSmiGen.create(tmpFG));
-        }
+    public void testMetalsMetalloids1() throws Exception {
+        String tmpMoleculeSmiles = "CCO[Si](OCC)(OCC)OCC"; //Tetraethyl Orthosilicate
+        String[] tmpExpectedFGs = new String[]{"*O[Si](O*)(O*)O*"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
     }
-    //TODO: add test molecules for these special cases to the testFind#() methods? After Achim agreed
+    //
+    /**
+     * Tests functional group identification on example molecules that contain metal or metalloid atoms.
+     *
+     * Note: all atoms are marked as hetero atoms by EFGF that are not H or C. So, metals and metalloids get treated like
+     * any other hetero atom.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testMetalsMetalloids2() throws Exception {
+        String tmpMoleculeSmiles = "O.O.O=[Al]O[Si](=O)O[Si](=O)O[Al]=O"; //Kaolin
+        String[] tmpExpectedFGs = new String[]{"*O*", "*O*", "O=[Al]O[Si](=O)O[Si](=O)O[Al]=O"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
+     *
+     */
+    @Test
+    public void testRAtoms1() throws Exception {
+        String tmpMoleculeSmiles = "OCC(CO[*])OC([*])=O"; //CHEBI:598
+        String[] tmpExpectedFGs = new String[]{"[H]O[C]", "[C][O]", "*O[C]=O"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
     //
     /**
      * Applies EFGF to detect functional groups in the given molecule and compares the identified FG to the given
@@ -565,7 +545,8 @@ public class ErtlFunctionalGroupsFinderTest {
      * @author Sebastian Fritsch
      */
     private void testFind(String aMoleculeSmiles, String[] anExpectedFGPseudoSmilesArray) throws Exception {
-        this.testFind(aMoleculeSmiles, anExpectedFGPseudoSmilesArray, new Aromaticity(ElectronDonation.daylight(), Cycles.all()));
+        this.testFind(aMoleculeSmiles, anExpectedFGPseudoSmilesArray, new Aromaticity(ElectronDonation.daylight(), Cycles.all()),
+                ErtlFunctionalGroupsFinder.Mode.DEFAULT);
     }
     //
     /**
@@ -577,17 +558,20 @@ public class ErtlFunctionalGroupsFinderTest {
      * @param aMoleculeSmiles input molecule to detect FG in
      * @param anExpectedFGPseudoSmilesArray expected FG
      * @param anAromaticityModel for aromaticity detection in preprocessing of the input molecule
+     * @param aFunctionalGroupEnvironmentMode to configure the EFGF used here
      * @throws Exception if anything goes wrong
      * @author Sebastian Fritsch
      */
-    private void testFind(String aMoleculeSmiles, String[] anExpectedFGPseudoSmilesArray, Aromaticity anAromaticityModel) throws Exception {
+    private void testFind(String aMoleculeSmiles, String[] anExpectedFGPseudoSmilesArray, Aromaticity anAromaticityModel,
+                          ErtlFunctionalGroupsFinder.Mode aFunctionalGroupEnvironmentMode)
+            throws Exception {
         // prepare input
         SmilesParser tmpSmilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
         IAtomContainer tmpMolecule = tmpSmilesParser.parseSmiles(aMoleculeSmiles);
         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMolecule);
         anAromaticityModel.apply(tmpMolecule);
         // find functional groups
-        ErtlFunctionalGroupsFinder tmpFGFinder = new ErtlFunctionalGroupsFinder();
+        ErtlFunctionalGroupsFinder tmpFGFinder = new ErtlFunctionalGroupsFinder(aFunctionalGroupEnvironmentMode);
         List<IAtomContainer> tmpFunctionalgroupsList = tmpFGFinder.find(tmpMolecule);
         // get expected groups
         List<IAtomContainer> tmpExpectedFGs = new LinkedList<>();
@@ -699,6 +683,18 @@ public class ErtlFunctionalGroupsFinderTest {
             tmpFunctionalGroup = new AtomContainer();
             tmpFunctionalGroup.setAtoms(new IAtom[] {a1, a2, a3});
             tmpFunctionalGroup.setBonds(new IBond[] {b1, b2});
+            return tmpFunctionalGroup;
+        case "Nar":
+            a1 = tmpBuilder.newInstance(IAtom.class, "N");
+            a1.setIsAromatic(true);
+            tmpFunctionalGroup = new AtomContainer();
+            tmpFunctionalGroup.setAtoms(new IAtom[] {a1});
+            return tmpFunctionalGroup;
+        case "Sar":
+            a1 = tmpBuilder.newInstance(IAtom.class, "S");
+            a1.setIsAromatic(true);
+            tmpFunctionalGroup = new AtomContainer();
+            tmpFunctionalGroup.setAtoms(new IAtom[] {a1});
             return tmpFunctionalGroup;
         default:
             // treat as normal SMILES code

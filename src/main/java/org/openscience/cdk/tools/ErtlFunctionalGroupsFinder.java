@@ -79,8 +79,9 @@ import java.util.Set;
  * </pre></blockquote>
  * In order to only identify functional groups in standardised, organic structures, ErtlFunctionalGroupsFinder can
  * be configured to only accept molecules that do *not* contain any metal, metalloid, or pseudo (R) atoms or formal charges.
- * Also structures consisting of more than one unconnected component (e.g. ion and counter-ion) are not accepted if the
- * strict input restrictions are turned on. This can be done via a boolean parameter in a variant of the central find() method.
+ * Also structures consisting of more than one unconnected component (e.g. ion and counter-ion) are not accepted if(!) the
+ * strict input restrictions are turned on (they are turned off by default).
+ * This can be done via a boolean parameter in a variant of the central find() method.
  * To identify molecules that need to be filtered from the input set or preprocessed in this use case, convenience methods are
  * available in this class. Please note that structural properties like formal charges and the others mentioned above
  * are not expected to cause issues (exceptions) when processed by this class, but they are not explicitly regarded by
