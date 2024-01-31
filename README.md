@@ -28,7 +28,7 @@ where <i>in silico</i> molecule fragmentation can be easily conducted on a given
 
 ## Contents of this repository
 ### Sources
-The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src">"src"</a> subfolder contains
+The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/src">"src"</a> subfolder contains
 all source code packages including JUnit tests.
 
 ### Tests
@@ -36,18 +36,18 @@ The test class <i>ErtlFunctionalGroupsFinderTest</i> tests the functionalities o
 Among other things, it tests whether the correct functional groups are detected in example molecules.
 
 ### Test resources
-The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src/test/resources">"resources"</a> subfolder
+The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/src/test/resources">"resources"</a> subfolder
 contains an SD file with a small subset of small molecules taken from the [Chemical Entities of Biological Interest (ChEBI) database](http://www.ebi.ac.uk/chebi) 
 for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) 
 which allows distribution and modification.
 
 ### Performance Snapshot CMD Application
-The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
+The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
 contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar</i>.
 It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find() 
 method under parallelization on multiple threads.
 For more details see the file 
-<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
+<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/main/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
 
 ## Example initialization and usage of ErtlFunctionalGroupsFinder
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
