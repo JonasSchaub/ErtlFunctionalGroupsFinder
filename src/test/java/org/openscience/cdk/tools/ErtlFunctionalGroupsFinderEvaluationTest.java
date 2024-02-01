@@ -22,6 +22,7 @@ package org.openscience.cdk.tools;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.CDKConstants;
@@ -93,6 +94,7 @@ import java.util.Set;
  * @author Jonas Schaub
  * @version 1.3
  */
+@Disabled("Legacy code and lengthy analyses")
 public class ErtlFunctionalGroupsFinderEvaluationTest {
 
     //<editor-fold defaultstate="collapsed" desc="Private static final constants">

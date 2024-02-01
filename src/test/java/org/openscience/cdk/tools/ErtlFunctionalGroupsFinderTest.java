@@ -538,6 +538,23 @@ public class ErtlFunctionalGroupsFinderTest {
     }
     //
     /**
+     * Tests that a former bug concerning unconnected, explicit hydrogen atoms does not occur anymore.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
+     */
+    @Test
+    public void testHydrogenBug() throws Exception {
+        String tmpMoleculeSmiles = "[H+].[H+].[O-]C(=O)\\C=C/C([O-])=O.[H][C@@]12Cc3c[nH]c4cccc(C1=C[C@@H](COC(=O)C1CCCCC1)CN2C)c34"; //CHEBI:365445
+        String[] tmpExpectedFGs = new String[]{"O=C([O-])[C]=[C]C(=O)[O-]", "[C]=[C]", "*OC(*)=O", "[R]N([R])[R]", "NarR3"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+
+        tmpMoleculeSmiles = "[HH].O=C1N([C@H](C)C(C1=C(O)[C@]2([C@]3([C@H](C=C([C@H]2[C@@H](C(=O)O)CC)C)C[C@H](C)CC3)C)C)=O)C"; //CHEBI:223373
+        tmpExpectedFGs = new String[]{"*C(=O)C(=[C]O[H])C(=O)N(*)*", "[C]=[C]", "*C(=O)O[H]"};
+        this.testFind(tmpMoleculeSmiles, tmpExpectedFGs);
+    }
+    //
+    /**
      * Applies EFGF to detect functional groups in the given molecule and compares the identified FG to the given
      * expected FG, using i.a. an identity search. Note that the order of the given FG must match the order of the detected
      * FG. The expected FG can contain pseudo-SMILES code for some specific cases, where aromatic atoms are marked using

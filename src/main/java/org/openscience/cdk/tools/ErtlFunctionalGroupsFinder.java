@@ -761,12 +761,12 @@ public class ErtlFunctionalGroupsFinder {
                 // if H...
                 // convert to implicit H
                 IAtom tmpConnectedAtom;
-                try {
+                if (this.adjListCache[idx].length > 0) {
                     tmpConnectedAtom = aMolecule.getAtom(this.adjListCache[idx][0]);
-                } catch(ArrayIndexOutOfBoundsException anException) {
-                    //TODO: this happens too often to ignore, investigate!
-                    ErtlFunctionalGroupsFinder.LOGGING_TOOL.warn("Explicit H was included in atom count but not correctly in adjacency list");
-                    break;
+                } else {
+                    //unconnected, explicit hydrogen atoms (like e.g. in CHEBI:365445) have an array of bond partners of size 0
+                    // nothing to do about them, but they also do not concern us
+                    continue;
                 }
                 if (Objects.isNull(tmpConnectedAtom.getImplicitHydrogenCount())) {
                     tmpConnectedAtom.setImplicitHydrogenCount(1);
