@@ -491,7 +491,7 @@ public class ErtlFunctionalGroupsFinderTest {
     }
     //
     /**
-     * Tests functional group identification on example molecules that contain metal or metalloid atoms.
+     * Tests correct functional group identification on an example molecule with metal/metalloid atoms.
      *
      * Note: all atoms are marked as hetero atoms by EFGF that are not H or C. So, metals and metalloids get treated like
      * any other hetero atom.
@@ -507,7 +507,7 @@ public class ErtlFunctionalGroupsFinderTest {
     }
     //
     /**
-     * Tests functional group identification on example molecules that contain metal or metalloid atoms.
+     * Tests correct functional group identification on an example molecule with metal/metalloid atoms.
      *
      * Note: all atoms are marked as hetero atoms by EFGF that are not H or C. So, metals and metalloids get treated like
      * any other hetero atom.
@@ -523,7 +523,12 @@ public class ErtlFunctionalGroupsFinderTest {
     }
     //
     /**
+     * Tests correct functional group identification on an example molecule with pseudo (R) atoms.
      *
+     * Note: these pseudo (R) atoms are simply ignored by EFGF.
+     *
+     * @throws Exception if anything goes wrong
+     * @author Jonas Schaub
      */
     @Test
     public void testRAtoms1() throws Exception {

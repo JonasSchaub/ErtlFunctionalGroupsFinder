@@ -73,17 +73,20 @@ import java.util.Set;
 /**
  * This test class can be used to read an SD file containing chemical structures, to extract their functional groups using
  * the ErtlFunctionalGroupsFinder with different settings (i.e. electron donation model and cycle finder algorithm), and write
- * the functional groups with their associated frequency under the given settings in this SD file to a CSV file.
+ * the identified functional groups with their associated frequency under the given settings in this SD file to a CSV file.
  * <p>
- * To run correctly the constant SD_FILE_PATH must be set to where to find the specific file on the local system.
+ * To run correctly, the constant SD_FILE_TEST_RESOURCE_NAME must be set to the name of the SD file to analyse which must be
+ * situated in the test resources folder.
  * <p>
- * All written files will be placed in a new folder in the same directory as the read SD file.
+ * All written files will be placed in the output folder.
  * <p>
  * Note for addition of new tests: Only one SD file should be analyzed per test method (since some mechanisms work under
  * that assumption).
  * <p>
- * Note that this code was written before the class ErtlFunctionalGroupsFinderUtility was implemented to make this type
- * of analyses more straightforward using its utility method. This test class here therefore does not use the EFGFUtility class.
+ * NOTE that this code was written before the class ErtlFunctionalGroupsFinderUtility was implemented to make this type
+ * of analyses more straightforward using its utility methods. This test class here therefore does not use the EFGFUtility class.
+ * This test class was also developed and used before EFGF was reworked before version 1.3. It can now only bee seen as outdated example code
+ * on how to analyse larger datasets using EFGF!!!
  *
  * @author Jonas Schaub
  * @version 1.2
@@ -92,11 +95,11 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
 
     //<editor-fold defaultstate="collapsed" desc="Private static final constants">
 
-    //<editor-fold defaultstate="collapsed" desc="Paths, directories and files">
+    //<editor-fold defaultstate="collapsed" desc="Paths, directories, and files">
     /**
-     * Path to SD file that should be analyzed
+     * Name of SD file in test resources folder that should be analyzed
      */
-    private static final String SD_FILE_PATH = "...\\ChEBI_lite_3star_subset.sdf";
+    private static final String SD_FILE_TEST_RESOURCE_NAME = "ChEBI_lite_3star_subset.sdf";
 
     /**
      * Directory for output files; Will be created as sub-folder in the working directory (the directory of the read SD file)
@@ -111,7 +114,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     /**
      * Separator for file name segments (test identifier, file name, time stamp)
      */
-    private static final String FILE_NAME_ADDITION_SEPERATOR = "_";
+    private static final String FILE_NAME_ADDITION_SEPARATOR = "_";
 
     //<editor-fold defaultstate="collapsed" desc="Test identifiers">
     /**
@@ -239,7 +242,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     /**
      * Separator for the output file's values
      */
-    private static final String OUTPUT_FILE_SEPERATOR = ",";
+    private static final String OUTPUT_FILE_SEPARATOR = ",";
 
     /**
      * Placeholder String for every functional group's SMILES code whose real SMILES representation could not be
@@ -368,7 +371,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
 
     //<editor-fold defaultstate="collapsed" desc="Private class variables">
     /**
-     * Directory for all produced files; It will be the directory where th SD file that is analyzed was loaded from
+     * Directory for all produced files; It will be the directory where the SD file that is analyzed was loaded from
      */
     private String outputDirectory;
 
@@ -465,7 +468,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     /**
      * Constructor
      * <p>
-     * Note: it does not initialize any class variables (except 5) because that would be unnecessary when it is called by a
+     * Note: it does not initialize any class variables because that would be unnecessary when it is called by a
      * test method inherited from CDKTestCase; these initializations are done by initialize().
      */
     public ErtlFunctionalGroupsFinderEvaluationTest() {
@@ -491,7 +494,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      */
     @Test
     public void testElectronDonationDependency() throws Exception {
-        this.analyzeElectronDonationDependency(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH,
+        this.analyzeElectronDonationDependency(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME,
                 ErtlFunctionalGroupsFinderEvaluationTest.ELECTRON_DONATION_TEST_IDENTIFIER,
                 true);
     }
@@ -507,7 +510,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      */
     @Test
     public void testElectronDonationDependencyNoMultiples() throws Exception {
-        this.analyzeElectronDonationDependency(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH,
+        this.analyzeElectronDonationDependency(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME,
                 ErtlFunctionalGroupsFinderEvaluationTest.ELECTRON_DONATION_NO_MULTIPLES_TEST_IDENTIFIER,
                 false);
     }
@@ -522,12 +525,12 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      */
     @Test
     public void testCycleFinderDependency() throws Exception {
-        this.initializeWithFileOperations(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH,
+        this.initializeWithFileOperations(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME,
                 ErtlFunctionalGroupsFinderEvaluationTest.CYCLE_FINDER_TEST_IDENTIFIER);
         Assumptions.assumeTrue(this.isTestAbleToRun);
 
-        System.out.println("\nLoading file with path: " + ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH);
-        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH);
+        System.out.println("\nLoading file with path: " + ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME);
+        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME);
         int tmpRequiredNumberOfReaders = 6;
         IteratingSDFReader[] tmpReaders = new IteratingSDFReader[tmpRequiredNumberOfReaders];
         try {
@@ -564,7 +567,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         }
         this.saveData();
         System.out.println("\nFinished!");
-        System.out.println("\nNumber of occured exceptions: " + this.exceptionsCounter);
+        System.out.println("\nNumber of occurred exceptions: " + this.exceptionsCounter);
     }
 
     /**
@@ -577,7 +580,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     public void testPerformance() throws Exception {
         this.initialize(true, "PerformanceTest");
         //First, check if the SD file is present and ignore test if it is not
-        String tmpPathToSDFile = ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_PATH;
+        String tmpPathToSDFile = ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME;
         System.out.println("\nLoading file with path: " + tmpPathToSDFile);
         File tmpSDFile = new File(tmpPathToSDFile);
         if (!tmpSDFile.canRead()) {
@@ -625,27 +628,17 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     }
     //
     /**
-     * TODO: what to do with this method, keep the analysis of the subset?
-     *
-     * ChEBI complete (184933 structures in file (some will automatically be skipped by SDF reader)):
-     * Number of parsed molecules: 184930
-     * Exceptions while preprocessing: 0
-     * Molecules that would be filtered due to input restrictions: 29637
-     * Exceptions with restrictions (prefiltered): 0
-     * Exceptions without restrictions: 0
-     *
-     * ChEBI lite 3-star subset SDF (1396 structures in file (some will automatically be skipped by SDF reader)):
-     * Number of parsed molecules: 1396
-     * Exceptions while preprocessing: 0
-     * Molecules that would be filtered due to input restrictions: 251
-     * Exceptions with restrictions (prefiltered): 0
-     * Exceptions without restrictions: 0
-     *
+     * Reads the ChEBI lite 3-star subset and determines the functional groups in it to compare how many input molecules
+     * cause exceptions with vs. without the earlier EFGF input restrictions.
+     * ChEBI lite 3-star subset SDF: 1396 structures in file (some will automatically be skipped by SDF reader).
+     * If needed, it can also generate images of those molecules that would be filtered and their functional groups.
      *
      * @throws Exception if anything goes wrong
      */
     @Test
     public void readChebiLite3StarSubset() throws Exception {
+        // change to true to activate image generation!
+        boolean tmpDepictFilteredMols = false;
         IteratingSDFReader tmpChebiSDFReader = null;
         try {
             tmpChebiSDFReader = new IteratingSDFReader(
@@ -685,17 +678,18 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
                 if (ErtlFunctionalGroupsFinder.isValidInputMoleculeWithRestrictionsTurnedOn(tmpMolecule)) {
                     List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule, false, true);
                 } else {
-                    //TODO: save these structures somewhere for inspection?
                     tmpMoleculesFilteredCounter++;
                     try {
-                        DepictionGenerator tmpDepictGen = new DepictionGenerator().withSize(712, 712).withFillToFit().withMargin(10);
-                        String tmpSourceFolder = new File("").getAbsolutePath();
-                        tmpDepictGen.depict(tmpMolecule).writeTo(tmpSourceFolder + File.separator + "Output" + File.separator + tmpMolecule.getProperty("ChEBI ID").toString().replace(':', '_') + ".png");
-                        List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule, false, false);
-                        int i = 0;
-                        for (IAtomContainer tmpFG : tmpFGList) {
-                            tmpDepictGen.depict(tmpFG).writeTo(tmpSourceFolder + File.separator + "Output" + File.separator + tmpMolecule.getProperty("ChEBI ID").toString().replace(':', '_') + "_" + i + ".png");
-                            i++;
+                        if (tmpDepictFilteredMols) {
+                            DepictionGenerator tmpDepictGen = new DepictionGenerator().withSize(712, 712).withFillToFit().withMargin(10);
+                            String tmpSourceFolder = new File("").getAbsolutePath();
+                            tmpDepictGen.depict(tmpMolecule).writeTo(tmpSourceFolder + File.separator + "Output" + File.separator + tmpMolecule.getProperty("ChEBI ID").toString().replace(':', '_') + ".png");
+                            List<IAtomContainer> tmpFGList = tmpEFGF.find(tmpMolecule, false, false);
+                            int i = 0;
+                            for (IAtomContainer tmpFG : tmpFGList) {
+                                tmpDepictGen.depict(tmpFG).writeTo(tmpSourceFolder + File.separator + "Output" + File.separator + tmpMolecule.getProperty("ChEBI ID").toString().replace(':', '_') + "_" + i + ".png");
+                                i++;
+                            }
                         }
                     } catch (Exception anException) {
                         anException.printStackTrace();
@@ -818,8 +812,8 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         SmilesParser tmpSmilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
         IAtomContainer tmpMol = tmpSmilesParser.parseSmiles(tmpSmiles);
         tmpMol = this.applyFiltersAndPreprocessing(tmpMol);
-    SmilesGenerator tmpGenerator = SmilesGenerator.unique();
-    Assertions.assertEquals("OCC", tmpGenerator.create(tmpMol));
+        SmilesGenerator tmpGenerator = SmilesGenerator.unique();
+        Assertions.assertEquals("OCC", tmpGenerator.create(tmpMol));
     }
     //</editor-fold>
 
@@ -830,21 +824,23 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      * Analyzes molecules in an SD file for all four different electron donation models supplied by the cdk:
      * daylight, cdk, piBonds, cdkAllowingExocyclic and the aromaticity model cdkLegacy.
      *
-     * @param anSDFilePath absolute path of the SD file to analyze
-     * @param aTestIdentifier a folder with this name will be created in the output directory and it will be added to
+     * @param anSDFileResourceName name of the SD file to analyse which must be situated in the test resources folder
+     * @param aTestIdentifier a folder with this name will be created in the output directory, and it will be added to
      * the output and log files' names for association of test and files; may be null or empty
      * @param anAreMultiplesCounted if false, functional groups that occur multiple times in the same molecule will
      * only be counted once
      * @throws java.lang.Exception if initializeWithFileOperations() throws an exception or an unexpected exception occurs
      */
-    private void analyzeElectronDonationDependency(String anSDFilePath,
+    private void analyzeElectronDonationDependency(
+            String anSDFileResourceName,
             String aTestIdentifier,
-            boolean anAreMultiplesCounted) throws Exception {
-        this.initializeWithFileOperations(anSDFilePath, aTestIdentifier);
+            boolean anAreMultiplesCounted)
+            throws Exception {
+        this.initializeWithFileOperations(anSDFileResourceName, aTestIdentifier);
         Assumptions.assumeTrue(this.isTestAbleToRun);
 
-        System.out.println("\nLoading file with path: " + anSDFilePath);
-        File tmpSDFile = new File(anSDFilePath);
+        System.out.println("\nLoading file with path: " + anSDFileResourceName);
+        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.class.getResource(anSDFileResourceName).getPath());
         int tmpRequiredNumberOfReaders = 5;
         IteratingSDFReader[] tmpReaders = new IteratingSDFReader[tmpRequiredNumberOfReaders];
         try {
@@ -884,7 +880,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         }
         this.saveData();
         System.out.println("\nFinished!");
-        System.out.println("\nNumber of occured exceptions: " + this.exceptionsCounter);
+        System.out.println("\nNumber of occurred exceptions: " + this.exceptionsCounter);
     }
 
     /**
@@ -956,25 +952,31 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     /**
      * Initializes all class variables and determines the output directory.
      *
-     * @param anSDFilePath absolute path of the SD file to analyze for a quick pre-check if it is present and the test
-     * is therefore meant to run; may be empty but not null
+     * @param anSDFileResourceName name of the SD file to analyse which must be situated in the test resources folder
      * @param aTestIdentifier a folder with this name will be created in the output directory and it will be added to
      * the output and log files' names for association of test and files; may be null or empty
      * @throws java.lang.Exception if one the FileWriter instances can not be instantiated, more than
      * Integer.MAX-VALUE tests are to be run this minute (error in the naming of output files), aPathOfSDFile is null or
      * an unexpected exception occurs.
      */
-    private void initializeWithFileOperations(String anSDFilePath, String aTestIdentifier) throws Exception {
+    private void initializeWithFileOperations(String anSDFileResourceName, String aTestIdentifier) throws Exception {
         System.out.println("\n#########################################################################\n");
         System.out.println("Starting new test, identifier: " + aTestIdentifier);
         System.out.println("\nInitializing class variables...");
         this.isTestAbleToRun = true;
         //First, check if the SD file is present and ignore test if it is not
-        File tmpSDFile = new File(anSDFilePath);
-        if (!tmpSDFile.canRead() || tmpSDFile.getAbsoluteFile().getParent() == null) {
-            System.out.println("\n\tUnable to find or read a file with path \"" + anSDFilePath + "\" or to get its parent directory.");
-            System.out.println("\nTest is ignored.");
+        File tmpSDFile = null;
+        try {
+            tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.class.getResource(anSDFileResourceName).getPath());
+        } catch (Exception e) {
             this.isTestAbleToRun = false;
+        }
+        if (!tmpSDFile.canRead()) {
+            this.isTestAbleToRun = false;
+        }
+        if (!this.isTestAbleToRun) {
+            System.out.println("\n\tUnable to find or read a file with path \"" + anSDFileResourceName + "\".");
+            System.out.println("\nTest is ignored.");
             Assumptions.assumeTrue(false);
             return;
         }
@@ -995,9 +997,9 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
                 ErtlFunctionalGroupsFinderEvaluationTest.DATE_TIME_FORMAT_PATTERN));
         //Set up exceptions log file
         File tmpExceptionsLogFile = new File(this.outputDirectory + File.separator + aTestIdentifier
-                + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.EXCEPTIONS_LOG_FILE_NAME
-                + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                 + tmpDateTimeAddition
                 + ErtlFunctionalGroupsFinderEvaluationTest.EXCEPTIONS_LOG_FILE_TYPE);
         int tmpFilesInThisMinuteCounter = 1;
@@ -1007,9 +1009,9 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
             tmpNumberAddedToFileName = true;
             while (tmpFilesInThisMinuteCounter <= Integer.MAX_VALUE) {
                 tmpExceptionsLogFile = new File(this.outputDirectory + File.separator + aTestIdentifier
-                        + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                        + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                         + ErtlFunctionalGroupsFinderEvaluationTest.EXCEPTIONS_LOG_FILE_NAME
-                        + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                        + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                         + tmpDateTimeAddition
                         + "(" + tmpFilesInThisMinuteCounter + ")"
                         + ErtlFunctionalGroupsFinderEvaluationTest.EXCEPTIONS_LOG_FILE_TYPE);
@@ -1032,16 +1034,16 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         File tmpFilteredMoleculesFile;
         if (tmpNumberAddedToFileName) {
             tmpFilteredMoleculesFile = new File(this.outputDirectory+ File.separator + aTestIdentifier
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + ErtlFunctionalGroupsFinderEvaluationTest.FILTERED_MOLECULES_FILE_NAME
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + tmpDateTimeAddition + "(" + tmpFilesInThisMinuteCounter + ")"
                     + ErtlFunctionalGroupsFinderEvaluationTest.FILTERED_MOLECULES_FILE_TYPE);
         } else {
             tmpFilteredMoleculesFile = new File(this.outputDirectory+ File.separator + aTestIdentifier
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + ErtlFunctionalGroupsFinderEvaluationTest.FILTERED_MOLECULES_FILE_NAME
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + tmpDateTimeAddition
                     + ErtlFunctionalGroupsFinderEvaluationTest.FILTERED_MOLECULES_FILE_TYPE);
         }
@@ -1054,17 +1056,17 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         File tmpOutputFile;
         if (tmpNumberAddedToFileName) {
             tmpOutputFile = new File(this.outputDirectory+ File.separator + aTestIdentifier
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_NAME
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + tmpDateTimeAddition
                     + "(" + tmpFilesInThisMinuteCounter + ")"
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_TYPE);
         } else {
             tmpOutputFile = new File(this.outputDirectory+ File.separator + aTestIdentifier
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_NAME
-                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.FILE_NAME_ADDITION_SEPARATOR
                     + tmpDateTimeAddition
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_TYPE);
         }
@@ -1437,14 +1439,14 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         System.out.println("\nWriting to file...");
         //Writing the output file's header
         String tmpFileHeader = ErtlFunctionalGroupsFinderEvaluationTest.HASH_CODE_KEY
-                + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.PSEUDO_SMILES_CODE_KEY
-                + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.SMILES_CODE_KEY;
         for (String tmpSettingsKey : this.settingsKeysList) {
-            tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR + tmpSettingsKey;
+            tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR + tmpSettingsKey;
         }
-        tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+        tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.MOLECULE_OF_ORIGIN_KEY;
         this.dataOutputPrintWriter.println(tmpFileHeader);
         this.dataOutputPrintWriter.flush();
@@ -1457,15 +1459,15 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
             String tmpPseudoSmilesCode = (String) tmpInnerMap.get(ErtlFunctionalGroupsFinderEvaluationTest.PSEUDO_SMILES_CODE_KEY);
             //Writing the record for this functional group
             String tmpRecord = tmpHashCode
-                    + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                     + tmpPseudoSmilesCode
-                    + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                    + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                     + tmpSmilesCode;
             for (String tmpSettingsKey : this.settingsKeysList) {
                 if (tmpInnerMap.get(tmpSettingsKey) == null) {
                     tmpInnerMap.put(tmpSettingsKey, 0);
                 }
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                         + tmpInnerMap.get(tmpSettingsKey);
             }
             IAtomContainer tmpMoleculeOfOrigin = (IAtomContainer)tmpInnerMap.get(
@@ -1474,13 +1476,13 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
             String tmpChemblId = tmpMoleculeOfOrigin.getProperty("chembl_id");
             String tmpCdkTitle = tmpMoleculeOfOrigin.getProperty(CDKConstants.TITLE);
             if (tmpChebiId != null) {
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR + tmpChebiId;
+                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR + tmpChebiId;
             } else if (tmpChemblId != null) {
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR + tmpChemblId;
+                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR + tmpChemblId;
             } else if (tmpCdkTitle != null) {
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR + tmpCdkTitle;
+                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR + tmpCdkTitle;
             } else {
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPERATOR
+                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                         + ErtlFunctionalGroupsFinderEvaluationTest.MOLECULE_OF_ORIGIN_ID_PLACEHOLDER;
             }
             this.dataOutputPrintWriter.println(tmpRecord);
