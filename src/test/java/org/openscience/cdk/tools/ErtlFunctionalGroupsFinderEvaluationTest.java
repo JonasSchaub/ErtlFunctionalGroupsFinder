@@ -80,16 +80,18 @@ import java.util.Set;
  * <p>
  * All written files will be placed in the output folder.
  * <p>
- * Note for addition of new tests: Only one SD file should be analyzed per test method (since some mechanisms work under
+ * Note for addition of new tests: Only one SD file should be analysed per test method (since some mechanisms work under
  * that assumption).
  * <p>
  * NOTE that this code was written before the class ErtlFunctionalGroupsFinderUtility was implemented to make this type
  * of analyses more straightforward using its utility methods. This test class here therefore does not use the EFGFUtility class.
- * This test class was also developed and used before EFGF was reworked before version 1.3. It can now only bee seen as outdated example code
- * on how to analyse larger datasets using EFGF!!!
+ * In fact, the routines used here were extracted to develop the EFGFUtility class.
+ * This test class was also developed and used before EFGF was reworked before version 1.3. It can now only bee seen as outdated example/legacy code
+ * on how to analyse larger datasets using EFGF!!! It is also documentation on how the analyses presented in the scientific
+ * article about EFGF were conducted.
  *
  * @author Jonas Schaub
- * @version 1.2
+ * @version 1.3
  */
 public class ErtlFunctionalGroupsFinderEvaluationTest {
 
@@ -102,7 +104,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     private static final String SD_FILE_TEST_RESOURCE_NAME = "ChEBI_lite_3star_subset.sdf";
 
     /**
-     * Directory for output files; Will be created as sub-folder in the working directory (the directory of the read SD file)
+     * Folder name for output files; will be created in repo root directory
      */
     private static final String OUTPUT_FOLDER_FROM_WORKING_DIRECTORY = "ErtlFunctionalGroupsFinderEvaluationTest_Output";
 
@@ -148,10 +150,10 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      * First lines in the exceptions log file
      */
     private static final String EXCEPTIONS_LOG_FILE_HEADER = "Following molecules led to the specified exceptions:"
-            + System.getProperty("line.separator")
+            + System.lineSeparator()
             + "(Note: If too many exceptions are thrown too fast the JVM stops filling in the complete stack trace. "
             + "You need to be looking at an earlier stack trace to see the details.)"
-            + System.getProperty("line.separator");
+            + System.lineSeparator();
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Filtered molecules log file">
@@ -438,7 +440,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      * functional groups and its values are inner HashMaps that hold the (pseudo) SMILES representation of a functional
      * group and its frequencies for different settings as String-Object pairs, plus an exemplary molecule of origin
      */
-    private HashMap<Long, HashMap> masterHashMap;
+    private HashMap<Long, HashMap<String, Object>> masterHashMap;
 
     /**
      * A map that gives a certain element symbol for a placeholder atom marking a specific aromatic atom in pseudo SMILES
@@ -530,7 +532,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         Assumptions.assumeTrue(this.isTestAbleToRun);
 
         System.out.println("\nLoading file with path: " + ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME);
-        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME);
+        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.class.getResource(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME).getPath());
         int tmpRequiredNumberOfReaders = 6;
         IteratingSDFReader[] tmpReaders = new IteratingSDFReader[tmpRequiredNumberOfReaders];
         try {
@@ -580,11 +582,10 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     public void testPerformance() throws Exception {
         this.initialize(true, "PerformanceTest");
         //First, check if the SD file is present and ignore test if it is not
-        String tmpPathToSDFile = ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME;
-        System.out.println("\nLoading file with path: " + tmpPathToSDFile);
-        File tmpSDFile = new File(tmpPathToSDFile);
+        System.out.println("\nLoading file with path: " + ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME);
+        File tmpSDFile = new File(ErtlFunctionalGroupsFinderEvaluationTest.class.getResource(ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME).getPath());
         if (!tmpSDFile.canRead()) {
-            System.out.println("\n\tUnable to find or read a file with path \"" + tmpPathToSDFile + "\".");
+            System.out.println("\n\tUnable to find or read a file with path \"" + ErtlFunctionalGroupsFinderEvaluationTest.SD_FILE_TEST_RESOURCE_NAME + "\".");
             System.out.println("\nTest is ignored.");
             Assumptions.assumeTrue(false);
             return;
@@ -910,7 +911,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
                 .molecular();
         this.ertlFGFinderGenOff = new ErtlFunctionalGroupsFinder(Mode.NO_GENERALIZATION);
         this.ertlFGFinderGenOn = new ErtlFunctionalGroupsFinder(Mode.DEFAULT);
-        this.masterHashMap = new HashMap(ErtlFunctionalGroupsFinderEvaluationTest.MASTER_HASHMAP_INITIAL_CAPACITY,
+        this.masterHashMap = new HashMap<>(ErtlFunctionalGroupsFinderEvaluationTest.MASTER_HASHMAP_INITIAL_CAPACITY,
                 ErtlFunctionalGroupsFinderEvaluationTest.MASTER_HASHMAP_LOAD_FACTOR);
         this.settingsKeysList = new LinkedList<>();
         this.exceptionsCounter = 0;
@@ -920,7 +921,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         for (int i = 0; i < tmpMetalNumbersStrings.length; i++) {
             tmpMetalNumbersInt[i] = Integer.parseInt(tmpMetalNumbersStrings[i]);
         }
-        this.nonMetallicAtomicNumbersSet = new HashSet(Arrays.asList(tmpMetalNumbersInt));
+        this.nonMetallicAtomicNumbersSet = new HashSet<>(Arrays.asList(tmpMetalNumbersInt));
         this.pseudoSmilesAromaticElementToPlaceholderElementMap = new HashMap<>(10, 1);
         this.pseudoSmilesAromaticElementToPlaceholderElementMap.put("C", "Ce");
         this.pseudoSmilesAromaticElementToPlaceholderElementMap.put("N", "Nd");
@@ -981,7 +982,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
             return;
         }
         //Determine the output directory
-        String tmpOutputRootDirectory = tmpSDFile.getAbsoluteFile().getParent() + File.separator;
+        String tmpOutputRootDirectory = new File("").getAbsolutePath() + File.separator;
         this.outputDirectory = tmpOutputRootDirectory
                 + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FOLDER_FROM_WORKING_DIRECTORY
                 + File.separator
@@ -1187,9 +1188,10 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         }
         try {
             aReader.close();
-        } catch (IOException anIOException) { }
-        //Since the filters remain the same in every iteration filtered molecules must be logged only once
-        //(assuming that only one SD file is analyzed in a test)
+        } catch (IOException anIOException) {
+            //Since the filters remain the same in every iteration filtered molecules must be logged only once
+            //(assuming that only one SD file is analyzed in a test)
+        }
         if (!this.areFilteredMoleculesLogged) {
             this.areFilteredMoleculesLogged = true;
         }
@@ -1385,7 +1387,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
             }
             //Case: functional group is already in the master HashMap
             if (this.masterHashMap.containsKey(tmpHashCode)) {
-                HashMap<String, Object> tmpInnerMap = (HashMap)this.masterHashMap.get(tmpHashCode);
+                HashMap<String, Object> tmpInnerMap = this.masterHashMap.get(tmpHashCode);
                 //And a key-value pair for this settings key is already present too -> raise frequency by one
                 if (tmpInnerMap.containsKey(aSettingsKey)) {
                     int tmpFrequency = (int)tmpInnerMap.get(aSettingsKey);
@@ -1397,7 +1399,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
                 }
             //The functional group did not occur before -> create a new inner HashMap for this molecule
             } else {
-                HashMap<String,Object> tmpNewInnerMap = new HashMap(
+                HashMap<String,Object> tmpNewInnerMap = new HashMap<>(
                         ErtlFunctionalGroupsFinderEvaluationTest.INNER_HASHMAPS_INITIAL_CAPACITY);
                 tmpNewInnerMap.put(ErtlFunctionalGroupsFinderEvaluationTest.MOLECULE_OF_ORIGIN_KEY, anFGContainingMolecule);
                 tmpNewInnerMap.put(aSettingsKey, 1);
@@ -1438,38 +1440,37 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         }
         System.out.println("\nWriting to file...");
         //Writing the output file's header
-        String tmpFileHeader = ErtlFunctionalGroupsFinderEvaluationTest.HASH_CODE_KEY
+        StringBuilder tmpFileHeaderBuilder = new StringBuilder(ErtlFunctionalGroupsFinderEvaluationTest.HASH_CODE_KEY
                 + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.PSEUDO_SMILES_CODE_KEY
                 + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
-                + ErtlFunctionalGroupsFinderEvaluationTest.SMILES_CODE_KEY;
+                + ErtlFunctionalGroupsFinderEvaluationTest.SMILES_CODE_KEY);
         for (String tmpSettingsKey : this.settingsKeysList) {
-            tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR + tmpSettingsKey;
+            tmpFileHeaderBuilder.append(ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR).append(tmpSettingsKey);
         }
+        String tmpFileHeader = tmpFileHeaderBuilder.toString();
         tmpFileHeader += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                 + ErtlFunctionalGroupsFinderEvaluationTest.MOLECULE_OF_ORIGIN_KEY;
         this.dataOutputPrintWriter.println(tmpFileHeader);
         this.dataOutputPrintWriter.flush();
-        Iterator tmpFunctionalGroupsIterator = this.masterHashMap.keySet().iterator();
+        Iterator<Long> tmpFunctionalGroupsIterator = this.masterHashMap.keySet().iterator();
         //Iteration for all molecules in the master HashMap
         while (tmpFunctionalGroupsIterator.hasNext()) {
-            long tmpHashCode = (long)tmpFunctionalGroupsIterator.next();
-            HashMap tmpInnerMap = (HashMap)this.masterHashMap.get(tmpHashCode);
+            long tmpHashCode = tmpFunctionalGroupsIterator.next();
+            HashMap<String, Object> tmpInnerMap = this.masterHashMap.get(tmpHashCode);
             String tmpSmilesCode = (String) tmpInnerMap.get(ErtlFunctionalGroupsFinderEvaluationTest.SMILES_CODE_KEY);
             String tmpPseudoSmilesCode = (String) tmpInnerMap.get(ErtlFunctionalGroupsFinderEvaluationTest.PSEUDO_SMILES_CODE_KEY);
             //Writing the record for this functional group
-            String tmpRecord = tmpHashCode
+            StringBuilder tmpRecordBuilder = new StringBuilder(tmpHashCode
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
                     + tmpPseudoSmilesCode
                     + ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
-                    + tmpSmilesCode;
+                    + tmpSmilesCode);
             for (String tmpSettingsKey : this.settingsKeysList) {
-                if (tmpInnerMap.get(tmpSettingsKey) == null) {
-                    tmpInnerMap.put(tmpSettingsKey, 0);
-                }
-                tmpRecord += ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR
-                        + tmpInnerMap.get(tmpSettingsKey);
+                tmpInnerMap.putIfAbsent(tmpSettingsKey, 0);
+                tmpRecordBuilder.append(ErtlFunctionalGroupsFinderEvaluationTest.OUTPUT_FILE_SEPARATOR).append(tmpInnerMap.get(tmpSettingsKey));
             }
+            String tmpRecord = tmpRecordBuilder.toString();
             IAtomContainer tmpMoleculeOfOrigin = (IAtomContainer)tmpInnerMap.get(
                     ErtlFunctionalGroupsFinderEvaluationTest.MOLECULE_OF_ORIGIN_KEY);
             String tmpChebiId = tmpMoleculeOfOrigin.getProperty("ChEBI ID");
@@ -1553,7 +1554,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      */
     private void logFilteredMolecule(IAtomContainer aMolecule, int aCounter, String aCause) {
         if(!this.areFileOperationsActivated) {
-            System.out.println("\nFile operations are not activated, invokation of logFilteredMolecule() is therefore not possible.");
+            System.out.println("\nFile operations are not activated, invocation of logFilteredMolecule() is therefore not possible.");
             return;
         }
         this.filteredMoleculesPrintWriter.println();
@@ -1591,7 +1592,7 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
      */
     private void logException(Exception anException, String aSettingsKey, IAtomContainer aMolecule) {
         if(!this.areFileOperationsActivated) {
-            System.out.println("\nFile operations are not activated, invokation of logException() is therefore not possible.");
+            System.out.println("\nFile operations are not activated, invocation of logException() is therefore not possible.");
             return;
         }
         this.exceptionsCounter++;

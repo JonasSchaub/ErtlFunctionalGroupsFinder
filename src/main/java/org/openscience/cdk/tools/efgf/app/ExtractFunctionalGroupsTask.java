@@ -33,11 +33,11 @@ import java.util.concurrent.Callable;
  * @version 1.2
  */
 public class ExtractFunctionalGroupsTask implements Callable<Integer> {
-
+    //
     private final IAtomContainer[] moleculesArray;
-
+    //
     private final ErtlFunctionalGroupsFinder ertlFinder;
-
+    //
     /**
      * Instantiates the thread.
      *
@@ -48,7 +48,7 @@ public class ExtractFunctionalGroupsTask implements Callable<Integer> {
         this.moleculesArray = aListOfMolecules;
         this.ertlFinder = new ErtlFunctionalGroupsFinder();
     }
-
+    //
     /**
      * Applies the ErtlFunctionalGroupsFinder.find(IAtomContainer container, boolean clone) method on all given
      * molecules (parameter clone = false) and counts the occurring exceptions.
@@ -68,5 +68,4 @@ public class ExtractFunctionalGroupsTask implements Callable<Integer> {
         }
         return tmpExceptionsCounter;
     }
-
 }

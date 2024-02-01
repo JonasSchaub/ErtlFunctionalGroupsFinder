@@ -93,7 +93,7 @@ public class ErtlFunctionalGroupsFinderUtility {
     //</editor-fold>
     //
     private ErtlFunctionalGroupsFinderUtility() {
-
+        // only created because JavaDoc task complained.
     }
     //
     //<editor-fold desc="Public static methods">
@@ -136,10 +136,10 @@ public class ErtlFunctionalGroupsFinderUtility {
         int tmpBondCount = aMolecule.getBondCount();
         return (tmpAtomCount == 0 || tmpBondCount == 0);
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container should NOT be passed on to the
-     * ErtlFunctionalGroupsFinder.find() method but instead be filtered.
+     * ErtlFunctionalGroupsFinder.find() method but instead be filtered if(!) strict input restrictions are turned on (turned off by default).
      * <br>In detail, this function returns true if the given atom container contains metal, metalloid, or pseudo atoms
      * or has an atom or bond count equal to zero.
      * <br>If this method returns false, this does NOT mean the molecule can be passed on to find() without a problem. It
@@ -152,10 +152,10 @@ public class ErtlFunctionalGroupsFinderUtility {
     public static boolean shouldBeFiltered(IAtomContainer aMolecule) throws NullPointerException {
         return ErtlFunctionalGroupsFinderUtility.shouldBeFiltered(aMolecule, true);
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container should NOT be passed on to the
-     * ErtlFunctionalGroupsFinder.find() method but instead be filtered.
+     * ErtlFunctionalGroupsFinder.find() method but instead be filtered if(!) strict input restrictions are turned on (turned off by default).
      * <br>In detail, this function returns true if the given atom container contains metal, metalloid, or pseudo atoms
      * or has an atom or bond count equal to zero. If the second parameter is set to "false", single atom molecules
      * (bond count is 0) are accepted and not recommended to be filtered if they fulfill the other requirements.
@@ -187,10 +187,11 @@ public class ErtlFunctionalGroupsFinderUtility {
         }
         return tmpShouldBeFiltered;
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container needs to be preprocessed before it is passed
-     * on to the ErtlFunctionalGroupsFinder.find() method because it is unconnected or contains charged atoms.
+     * on to the ErtlFunctionalGroupsFinder.find() method because it is unconnected or contains charged atoms if(!)
+     * strict input restrictions are turned on (turned off by default).
      * <br>It is advised to check via shouldBeFiltered() whether the given molecule should be discarded anyway before
      * calling this function.
      *
@@ -212,10 +213,10 @@ public class ErtlFunctionalGroupsFinderUtility {
         }
         return tmpNeedsPreprocessing;
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container can be passed on to the
-     * ErtlFunctionalGroupsFinder.find() method without problems.
+     * ErtlFunctionalGroupsFinder.find() method without problems if(!) strict input restrictions are turned on (turned off by default).
      * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms, contains
      * multiple unconnected parts, or has an atom or bond count of zero.
      *
@@ -226,10 +227,10 @@ public class ErtlFunctionalGroupsFinderUtility {
     public static boolean isValidArgumentForFindMethod(IAtomContainer aMolecule) throws NullPointerException {
         return ErtlFunctionalGroupsFinderUtility.isValidArgumentForFindMethod(aMolecule, true);
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container can be passed on to the
-     * ErtlFunctionalGroupsFinder.find() method without problems.
+     * ErtlFunctionalGroupsFinder.find() method without problems if(!) strict input restrictions are turned on (turned off by default).
      * <br>This method will return false if the molecule contains any metal, metalloid, pseudo, or charged atoms, contains
      * multiple unconnected parts, or has an atom or bond count of zero. If the second parameter is set to "false", single atom molecules
      * (bond count is 0) are accepted and not recommended to be filtered if they fulfill the other requirements.
@@ -291,7 +292,7 @@ public class ErtlFunctionalGroupsFinderUtility {
         tmpBiggestComponent.setProperties(aMolecule.getProperties());
         return tmpBiggestComponent;
     }
-
+    //
     /**
      * Neutralizes charged atoms in the given atom container by zeroing the formal atomic charges and filling up free
      * valences with implicit hydrogen atoms (according to the CDK atom types). This procedure allows a more general
@@ -317,7 +318,7 @@ public class ErtlFunctionalGroupsFinderUtility {
             ErtlFunctionalGroupsFinderUtility.neutralizeCharges(tmpAtom, aMolecule);
         }
     }
-
+    //
     /**
      * Neutralizes a charged atom in the given parent atom container by zeroing the formal atomic charge and filling up free
      * valences with implicit hydrogen atoms (according to the CDK atom types).
@@ -361,7 +362,7 @@ public class ErtlFunctionalGroupsFinderUtility {
             tmpHAdder.addImplicitHydrogens(aParentMolecule, anAtom);
         }
     }
-
+    //
     /**
      * Convenience method to perceive atom types for all IAtoms in the IAtomContainer, using the
      * CDK AtomContainerManipulator or rather the CDKAtomTypeMatcher. If the matcher finds a matching atom type, the
@@ -385,7 +386,7 @@ public class ErtlFunctionalGroupsFinderUtility {
         //Might throw CDKException but it is unclear in what case
         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(aMolecule);
     }
-
+    //
     /**
      * Convenience method for applying the given aromaticity model to the given molecule. Any existing aromaticity flags
      * are removed - even if no aromatic bonds were found. This follows the idea of applying an aromaticity model to a
@@ -424,7 +425,7 @@ public class ErtlFunctionalGroupsFinderUtility {
         }
         return tmpIsAromatic;
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container should be filtered instead of being passed
      * on to the ErtlFunctionalGroupsFinder.find() method and if not, applies necessary preprocessing steps.
@@ -432,7 +433,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * to the given atom container that is always needed (setting atom types and applying an aromaticity model) and
      * preprocessing steps that are only needed in specific cases (selecting the biggest unconnected component, neutralizing
      * charges). Molecules processed by this method can be passed on to find() without problems (Caution: The return value
-     * of this method is 'null' if the molecule should be filtered!).
+     * of this method is 'null' if the molecule should be filtered!) if(!) strict input restrictions are turned on (turned off by default).
      * <br>NOTE: This method changes major properties and the composition of the given IAtomContainer object! If you
      * want to retain your object unchanged for future calculations, use the IAtomContainer's
      * clone() method.
@@ -449,7 +450,7 @@ public class ErtlFunctionalGroupsFinderUtility {
     public static IAtomContainer applyFiltersAndPreprocessing(IAtomContainer aMolecule, Aromaticity anAromaticityModel) throws NullPointerException {
         return ErtlFunctionalGroupsFinderUtility.applyFiltersAndPreprocessing(aMolecule, anAromaticityModel, true);
     }
-
+    //
     /**
      * Checks whether the given molecule represented by an atom container should be filtered instead of being passed
      * on to the ErtlFunctionalGroupsFinder.find() method and if not, applies necessary preprocessing steps.
@@ -457,7 +458,7 @@ public class ErtlFunctionalGroupsFinderUtility {
      * to the given atom container that is always needed (setting atom types and applying an aromaticity model) and
      * preprocessing steps that are only needed in specific cases (selecting the biggest unconnected component, neutralizing
      * charges). Molecules processed by this method can be passed on to find() without problems (Caution: The return value
-     * of this method is 'null' if the molecule should be filtered!).
+     * of this method is 'null' if the molecule should be filtered!) if(!) strict input restrictions are turned on (turned off by default).
      * <br>NOTE: This method changes major properties and the composition of the given IAtomContainer object! If you
      * want to retain your object unchanged for future calculations, use the IAtomContainer's
      * clone() method.
@@ -518,7 +519,6 @@ public class ErtlFunctionalGroupsFinderUtility {
     //</editor-fold>
     //
     //<editor-fold desc="Additional functionalities">
-
     /**
      * Replaces the environmental carbon or pseudo-atoms (new IAtom objects) inserted by the EFGF in an identified
      * functional group with the carbon IAtom objects from the original molecule object.
@@ -617,7 +617,7 @@ public class ErtlFunctionalGroupsFinderUtility {
             }
         }
     }
-
+    //
     /**
      * Gives the pseudo SMILES code for a given molecule / functional group. In this notation, aromatic atoms are marked
      * by asterisks (*) and pseudo atoms are indicated by 'R'.

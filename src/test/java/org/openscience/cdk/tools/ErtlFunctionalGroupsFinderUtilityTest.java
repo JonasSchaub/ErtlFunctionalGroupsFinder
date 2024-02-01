@@ -71,7 +71,7 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
             Assertions.assertEquals(tmpTestPairsMap.get(tmpSmilesCode), tmpPseudoSmilesCode);
         }
     }
-
+    //
     /**
      * Test for correct MoleculeHashGenerator settings/performance on some examples.
      *
@@ -143,7 +143,7 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
             Assertions.assertEquals(tmpHashGenerator.generate(tmpKeyMol), tmpHashGenerator.generate(tmpValueMol));
         }
     }
-
+    //
     /**
      * Test for correct preprocessing (neutralization of charges and selection of biggest fragment).
      *
@@ -160,7 +160,7 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
         SmilesGenerator tmpGenerator = new SmilesGenerator(SmiFlavor.Unique);
         Assertions.assertEquals("OCC", tmpGenerator.create(tmpMol));
     }
-
+    //
     /**
      * Tests the restoration of environmental carbon atom objects on one example molecule. Nothing is asserted here, it
      * is meant for visual inspection.
@@ -209,7 +209,7 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
             System.out.println(tmpSmiGen.create(tmpFG));
         }
     }
-
+    //
     /**
      * Imports a charged molecule with a counter-ion from ChEMBL to test the filtering and preprocessing routines
      * of ErtlFunctionalGroupsFinderUtility.
@@ -240,7 +240,7 @@ public class ErtlFunctionalGroupsFinderUtilityTest {
             System.out.println(ErtlFunctionalGroupsFinderUtility.createPseudoSmilesCode(tmpFG));
         }
     }
-
+    //
     /**
      * Test charge neutralization.
      */

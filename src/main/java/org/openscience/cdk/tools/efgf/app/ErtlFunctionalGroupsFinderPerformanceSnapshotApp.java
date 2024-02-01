@@ -62,58 +62,60 @@ import java.util.concurrent.Future;
 /**
  * An application for testing the performance of the ErtlFunctionalGroupsFinder.find() method under parallelization on
  * multiple threads.
+ * <br><br>
+ * Legacy code that still assumes that the old input restrictions are turned on.
  *
  * @author Jonas Schaub
  * @version 1.2.0.0
  */
 public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
-
+    //
     //<editor-fold defaultstate="collapsed" desc="Private static final constants">
     /**
      * Name of file for logging occurred exceptions
      */
     private static final String EXCEPTIONS_LOG_FILE_NAME = "Exceptions_Log.txt";
-
+    //
     /**
      * Name of file for writing results
      */
     private static final String RESULTS_FILE_NAME = "Results.txt";
-
+    //
     /**
      * All allowed atomic numbers to pass to the ErtlFunctionalGroupsFinder;
      * String will be split and resulting integers passed to a set
      */
     private static final String NON_METALLIC_ATOMIC_NUMBERS = "1,2,6,7,8,9,10,15,16,17,18,34,35,36,53,54,86";
     //</editor-fold>
-
+    //
     //<editor-fold defaultstate="collapsed" desc="Private class variables">
     /**
      * All allowed atomic numbers to pass to the ErtlFunctionalGroupsFinder as a set of integers (will be parsed from
      * NON_METALLIC_ATOMIC_NUMBERS)
      */
     private Set<Integer> nonMetallicAtomicNumbersSet;
-
+    //
     /**
      * The working directory (the jar-file's directory)
      */
     private String workingPath;
-
+    //
     /**
      * The given number of different threads to use
      */
     private int numberOfThreadsToUse;
-
+    //
     /**
      * All molecules loaded from the SD file
      */
     private IAtomContainer[] moleculesArray;
-
+    //
     /**
      * The aromaticity model in use
      */
     private Aromaticity aromaticityModel;
     //</editor-fold>
-
+    //
     //<editor-fold defaultstate="collapsed" desc="Constructor">
     /**
      * Instantiates and starts the application. It first loads all molecules from a given SD file into memory and then
@@ -265,7 +267,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         }
     }
     //</editor-fold>
-
+    //
     //<editor-fold defaultstate="collapsed" desc="Private methods">
     /**
      * Performs all preprocessing needed for the ErtlFunctionalGroupsFinder and throws an IllegalArgumentException
@@ -311,7 +313,7 @@ public class ErtlFunctionalGroupsFinderPerformanceSnapshotApp {
         this.aromaticityModel.apply(aMolecule);
         return aMolecule;
     }
-
+    //
     /**
      * Appends the given exception's stack trace to a log file.
      *
