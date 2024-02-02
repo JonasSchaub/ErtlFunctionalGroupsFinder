@@ -1,6 +1,6 @@
 /*
  * ErtlFunctionalGroupsFinder for CDK
- * Copyright (c) 2023 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
+ * Copyright (c) 2024 Sebastian Fritsch, Stefan Neumann, Jonas Schaub, Christoph Steinbeck, and Achim Zielesny
  * 
  * Source code is available at <https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder>
  * 
@@ -27,11 +27,11 @@ package org.openscience.cdk.tools.efgf.app;
  * @version 1.2
  */
 public class Main {
-
+    //
     private Main() {
-
+        // only created because JavaDoc task complained.
     }
-
+    //
     /**
      * Starts the application. Command line arguments must be the name of an SD-file to read (must be located in the
      * same directory as the application's .jar file) and the number of different threads to use for calculation.
@@ -46,5 +46,4 @@ public class Main {
             System.exit(1);
         }
     }
-
 }
