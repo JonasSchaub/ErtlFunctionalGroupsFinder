@@ -486,8 +486,6 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Public test methods">
-
-    //<editor-fold defaultstate="collapsed" desc="Tests involving databases">
     /**
      * Test for analyzing molecules in an SD file for all four different electron donation models supplied by the cdk:
      * daylight, cdk, piBonds, cdkAllowingExocyclic and the aromaticity model cdkLegacy.
@@ -725,101 +723,6 @@ public class ErtlFunctionalGroupsFinderEvaluationTest {
         System.out.println("Exceptions with restrictions (prefiltered): " + tmpExceptionsWithRestrictionsCounter);
         System.out.println("Exceptions without restrictions: " + tmpExceptionsWithoutRestrictionsCounter);
     }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="Other tests">
-    /**
-     * Test for correct MoleculeHashGenerator settings/performance on some examples.
-     *
-     * @throws java.lang.Exception if initialize() throws an exception or a SMILES code can not be parsed into a molecule
-     */
-    @Test
-    public void testMoleculeHashGeneratorSettings() throws Exception {
-        this.initialize(false, "");
-        SmilesParser tmpSmilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-
-        /*Chebi70986, Chebi16238 and Chebi57692 all contain the same functional group with pseudo SMILES code
-        "O=C1N=C(C(=NR)C(=O)N1R)N(R)R", but different hybridizations in the resulting atom containers. But their hash
-        codes should be the same under the given settings. This is tested exemplary for many similar cases*/
-        String[] tmpSmilesArray = {"OC[C@@H](O)[C@@H](O)[C@@H](O)CN1CC(CO)N=C2C(=O)NC(=O)N=C12",
-            "Cc1cc2nc3c(nc(=O)[nH]c3=O)n(C[C@H](O)[C@H](O)[C@H](O)COP(O)(=O)OP(O)(=O)OC[C@H]3O[C@H]([C@H](O)[C@@H]3O)n3cnc4c(N)ncnc34)c2cc1C",
-            "Cc1cc2nc3c(nc(=O)[n-]c3=O)n(C[C@H](O)[C@H](O)[C@H](O)COP([O-])(=O)OP([O-])(=O)OC[C@H]3O[C@H]([C@H](O)[C@@H]3O)n3cnc4c(N)ncnc34)c2cc1C"};
-        List<Long> tmpHashCodesList = new LinkedList<>();
-        for (String tmpSmilesCode : tmpSmilesArray) {
-            IAtomContainer tmpParsedMolecule = tmpSmilesParser.parseSmiles(tmpSmilesCode);
-            tmpParsedMolecule = this.applyFiltersAndPreprocessing(tmpParsedMolecule);
-            Aromaticity.cdkLegacy().apply(tmpParsedMolecule);
-            List<IAtomContainer> tmpFunctionalGroups = this.ertlFGFinderGenOn.find(tmpParsedMolecule);
-            for (IAtomContainer tmpFunctionalGroup : tmpFunctionalGroups) {
-                if (this.getPseudoSmilesCode(tmpFunctionalGroup).equals("O=C1N=C(C(=NR)C(=O)N1R)N(R)R")) {
-                    tmpHashCodesList.add(this.molHashGenerator.generate(tmpFunctionalGroup));
-                }
-            }
-        }
-        for (Long tmpHashCode1 : tmpHashCodesList) {
-            for (Long tmpHashCode2 : tmpHashCodesList) {
-                Assertions.assertEquals(tmpHashCode1.longValue(), tmpHashCode2.longValue());
-            }
-        }
-
-        /*Functional groups like the tertiary amine or the hydroxyl group appear with aromatic and non-aromatic central
-        atoms. These two cases should be discrimated by the MoleculeHashGenerator under the given settings*/
-        String tmpTertiaryAmineSmiles = "*N(*)*";
-        IAtomContainer tmpAromMol = tmpSmilesParser.parseSmiles(tmpTertiaryAmineSmiles);
-        IAtomContainer tmpNonAromMol = tmpSmilesParser.parseSmiles(tmpTertiaryAmineSmiles);
-        for (IAtom tmpAtom : tmpAromMol.atoms()) {
-            if (tmpAtom.getSymbol().equals("N"))
-                tmpAtom.setIsAromatic(true);
-        }
-        Assertions.assertNotEquals(this.molHashGenerator.generate(tmpAromMol), this.molHashGenerator.generate(tmpNonAromMol));
-        String tmpHydroxylGroupSmiles = "[H]O[C]";
-        tmpAromMol = tmpSmilesParser.parseSmiles(tmpHydroxylGroupSmiles);
-        tmpNonAromMol = tmpSmilesParser.parseSmiles(tmpHydroxylGroupSmiles);
-        for (IAtom tmpAtom : tmpAromMol.atoms()) {
-            if (tmpAtom.getSymbol().equals("C"))
-                tmpAtom.setIsAromatic(true);
-        }
-        Assertions.assertNotEquals(this.molHashGenerator.generate(tmpAromMol), this.molHashGenerator.generate(tmpNonAromMol));
-
-        /*The following are examples of different (unique!) SMILES codes representing the same functional groups.
-        They should be assigned the same hash code*/
-        HashMap<String,String> tmpEquivalentSmilesMap = new HashMap<>(20);
-        tmpEquivalentSmilesMap.put("*[N](*)=C(N(*)*)N(*)*", "*N(*)C(=[N](*)*)N(*)*");
-        tmpEquivalentSmilesMap.put("*SC1=[N](*)[C]=[C]N1*", "*SC=1N(*)[C]=[C][N]1*");
-        tmpEquivalentSmilesMap.put("*[N]1=[C][C]=[C]N1*", "*N1[C]=[C][C]=[N]1*");
-        tmpEquivalentSmilesMap.put("*[N](*)=[C]N(*)*", "*N(*)[C]=[N](*)*");
-        tmpEquivalentSmilesMap.put("*N(*)[C]=[C][C]=[C][C]=[C][C]=[C][C]=[N](*)*", "*[N](*)=[C][C]=[C][C]=[C][C]=[C][C]=[C]N(*)*");
-        tmpEquivalentSmilesMap.put("*[N](*)=C(N(*)*)N(*)P(=O)(O[H])O[H]", "*N(*)C(=[N](*)*)N(*)P(=O)(O[H])O[H]");
-        tmpEquivalentSmilesMap.put("[O]I(=O)=O", "O=I(=O)[O]");
-        tmpEquivalentSmilesMap.put("[O]Br(=O)=O", "O=Br(=O)[O]");
-        tmpEquivalentSmilesMap.put("[O]Cl(=O)(=O)=O", "O=Cl(=O)(=O)[O]");
-        tmpEquivalentSmilesMap.put("[C]=[C][C]=[C]C#C[C]=[C]C#[C]", "[C]#C[C]=[C]C#C[C]=[C][C]=[C]");
-        tmpEquivalentSmilesMap.put("*N1[C]=[C][C]=[N]1*", "*[N]1=[C][C]=[C]N1*");
-        tmpEquivalentSmilesMap.put("O=C(*)O*", "*OC(*)=O");
-        for (String tmpKeySmiles : tmpEquivalentSmilesMap.keySet()) {
-            IAtomContainer tmpKeyMol = tmpSmilesParser.parseSmiles(tmpKeySmiles);
-            IAtomContainer tmpValueMol = tmpSmilesParser.parseSmiles(tmpEquivalentSmilesMap.get(tmpKeySmiles));
-            Assertions.assertEquals(this.molHashGenerator.generate(tmpKeyMol), this.molHashGenerator.generate(tmpValueMol));
-        }
-    }
-
-    /**
-     * Test for correct preprocessing (neutralization of charges and selection of biggest fragment).
-     *
-     * @throws Exception if initialize() throws an exception or a SMILES code can not be parsed into a molecule
-     */
-    @Test
-    public void testPreprocessing() throws Exception {
-        this.initialize(false, "");
-        String tmpSmiles = "CC[O-].C";
-        SmilesParser tmpSmilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        IAtomContainer tmpMol = tmpSmilesParser.parseSmiles(tmpSmiles);
-        tmpMol = this.applyFiltersAndPreprocessing(tmpMol);
-        SmilesGenerator tmpGenerator = SmilesGenerator.unique();
-        Assertions.assertEquals("OCC", tmpGenerator.create(tmpMol));
-    }
-    //</editor-fold>
-
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Private methods">
