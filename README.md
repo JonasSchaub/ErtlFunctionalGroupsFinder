@@ -6,8 +6,11 @@
 [![GitHub issues](https://img.shields.io/github/issues/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/issues/)
 [![GitHub contributors](https://img.shields.io/github/contributors/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://GitHub.com/JonasSchaub/ErtlFunctionalGroupsFinder/graphs/contributors/)
 [![GitHub release](https://img.shields.io/github/release/JonasSchaub/ErtlFunctionalGroupsFinder.svg)](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/releases/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder)
+[![Maven Central - Search index](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jonasschaub/ErtlFunctionalGroupsFinder)
+[![Maven Central - Artifact page](https://img.shields.io/badge/Maven_Central-Artifact_page-2ea44f)](https://central.sonatype.com/artifact/io.github.jonasschaub/ErtlFunctionalGroupsFinder/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JonasSchaub_ErtlFunctionalGroupsFinder&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JonasSchaub_ErtlFunctionalGroupsFinder)
+[![Software Article - JChemInf](https://img.shields.io/badge/Software_Article-JChemInf-blue)](https://doi.org/10.1186/s13321-019-0361-8)
+[![GitHub - Wiki](https://img.shields.io/badge/GitHub-Wiki-blue?logo=GitHub)](https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki)
 
 
 ![ErtlFunctionalGroupsFinder_logo](./Logo/Ertl.png)
@@ -28,7 +31,7 @@ where <i>in silico</i> molecule fragmentation can be easily conducted on a given
 
 ## Contents of this repository
 ### Sources
-The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src">"src"</a> subfolder contains
+The <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/src">"src"</a> subfolder contains
 all source code packages including JUnit tests.
 
 ### Tests
@@ -36,18 +39,18 @@ The test class <i>ErtlFunctionalGroupsFinderTest</i> tests the functionalities o
 Among other things, it tests whether the correct functional groups are detected in example molecules.
 
 ### Test resources
-The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/src/test/resources">"resources"</a> subfolder
+The test <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/src/test/resources">"resources"</a> subfolder
 contains an SD file with a small subset of small molecules taken from the [Chemical Entities of Biological Interest (ChEBI) database](http://www.ebi.ac.uk/chebi)
 for example usage purposes. The database is licensed under the [Creative Commons License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
 which allows distribution and modification.
 
 ### Performance Snapshot CMD Application
-The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/master/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
-contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp-1.2.0.0.jar</i>.
+The folder <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/tree/main/Performance_Snapshot_App_jar">"Performance_Snapshot_App_jar"</a>
+contains the executable JAVA archive <i>ErtlFunctionalGroupsFinder-PerformanceSnapshotApp.jar</i>.
 It can be executed from the command-line (command: java -jar) to do a performance snapshot of the ErtlFunctionalGroupsFinder.find()
 method under parallelization on multiple threads.
 For more details see the file
-<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/master/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
+<a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/blob/main/Performance_Snapshot_App_jar/Performance%20usage%20instructions.txt">"Performance usage instructions.txt"</a>
 
 ## Example initialization and usage of ErtlFunctionalGroupsFinder
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
@@ -63,7 +66,7 @@ will need to be installed via JAR archives as well this way.
 <br>
 In order to open the project locally, e.g. to extend it, download or clone the repository and
 open it in a Gradle-supporting IDE (e.g. IntelliJ) as a Gradle project and execute the build.gradle file.
-Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 21 or higher must also
+Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 11 or higher must also
 be pre-installed.
 
 ## Dependencies
