@@ -53,6 +53,8 @@ For more details see the file
 see in <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder/wiki">"wiki"</a>
 
 ## Installation
+<b>Note that since version 2.10, ErtlFunctionalGroupsFinder is now part of the <a href="https://github.com/cdk/cdk">Chemistry Development Kit</a> as class "FunctionalGroupsFinder".</b> So, if you are alrady using CDK, you do not need to install EFGF externally.
+<br>
 ErtlFunctionalGroupsFinder is hosted as a package/artifact on the sonatype maven central repository. See the
 <a href="https://central.sonatype.com/artifact/io.github.jonasschaub/ErtlFunctionalGroupsFinder/">artifact page</a> for installation
 guidelines using build tools like maven or gradle.
